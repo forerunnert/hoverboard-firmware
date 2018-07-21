@@ -10,6 +10,10 @@
 
 #define DELAY_IN_MAIN_LOOP 2        // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
 
+// Battery voltage calibration: connect power source. use multimeter to measure real voltage and write it to BAT_CALIB_REAL_VOLTAGE. watch UART on one of the sensor board cables. write value nr 4 to BAT_CALIB_ADC. make and flash firmware. you can verify voltage on UART debug value 5 (devide it by 100.0 to get calibrated voltage). 
+#define BAT_CALIB_REAL_VOLTAGE        42.0       // input voltage measured by multimeter  
+#define BAT_CALIB_ADC                 1667       // adc-value measured by mainboard (value nr 4 on UART debug output)
+
 // 10s:
 // #define BAT_LOW_LVL1     36.7       // gently beeps at this voltage level. ~3.67V/cell
 // #define BAT_LOW_LVL2     35.0       // your battery is almost empty. Charge now! ~3.5V/cell
