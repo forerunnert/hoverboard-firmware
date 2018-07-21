@@ -362,13 +362,13 @@ int main(void) {
 
 
     // ####### BATTERY VOLTAGE #######
-    if (batteryVoltage < BAT_LOW_LVL1 && batteryVoltage > BAT_LOW_LVL2) {
+    if (batteryVoltage < ((float)BAT_LOW_LVL1 * (float)BAT_NUMBER_OF_CELLS) && batteryVoltage > ((float)BAT_LOW_LVL2 * (float)BAT_NUMBER_OF_CELLS)) {
       buzzerFreq = 5;
-      buzzerPattern = 8;
-    } else if  (batteryVoltage < BAT_LOW_LVL2 && batteryVoltage > BAT_LOW_DEAD) {
+      buzzerPattern = 42;
+    } else if (batteryVoltage < ((float)BAT_LOW_LVL2 * (float)BAT_NUMBER_OF_CELLS) && batteryVoltage > ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS)) {
       buzzerFreq = 5;
-      buzzerPattern = 1;
-    } else if  (batteryVoltage < BAT_LOW_DEAD) {
+      buzzerPattern = 6;
+    } else if (batteryVoltage < ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS)) {
       buzzerPattern = 0;
       enable = 0;
       for (int i = 0; i < 8; i++) {
