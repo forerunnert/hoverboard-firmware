@@ -40,7 +40,6 @@ int cmd1;  // normalized input values. -1000 to 1000
 int cmd2;
 int cmd3;
 
-
 typedef struct{
    int16_t steer;
    int16_t speed;
@@ -59,6 +58,8 @@ extern volatile int pwmr;  // global variable for pwm right. -1000 to 1000
 extern volatile int weakl; // global variable for field weakening left. -1000 to 1000
 extern volatile int weakr; // global variable for field weakening right. -1000 to 1000
 
+float weak;  // fuer sanftes einsetzen des turbos
+
 extern uint8_t buzzerFreq;    // global variable for the buzzer pitch. can be 1, 2, 3, 4, 5, 6, 7...
 extern uint8_t buzzerPattern; // global variable for the buzzer pattern. can be 1, 2, 3, 4, 5, 6, 7...
 
@@ -67,12 +68,24 @@ extern uint8_t enable; // global variable for motor enable
 extern volatile uint32_t timeout; // global variable for timeout
 extern float batteryVoltage; // global variable for battery voltage
 
+uint32_t inactivity_timeout_counter;
+
 extern uint8_t nunchuck_data[6];
 #ifdef CONTROL_PPM
 extern volatile uint16_t ppm_captured_value[PPM_NUM_CHANNELS+1];
 #endif
 
 int milli_vel_error_sum = 0;
+
+
+void beep(uint8_t anzahl) {  // blocking function, do not use in main loop!
+    for(uint8_t i = 0; i < anzahl; i++) {
+        buzzerFreq = 2;
+        HAL_Delay(100);
+        buzzerFreq = 0;
+        HAL_Delay(200);
+    }
+}
 
 int main(void) {
   HAL_Init();
@@ -120,8 +133,11 @@ int main(void) {
   HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
 
   int lastSpeedL = 0, lastSpeedR = 0;
-  int speedL = 0, speedR = 0;
-  float direction = 1;
+  int speedL = 0, speedR = 0, speedRL = 0;
+  // float direction = 1;
+  
+  float adc1_filtered = 0.0;
+  float adc2_filtered = 0.0;
 
   #ifdef CONTROL_PPM
     PPM_Init();
@@ -159,10 +175,39 @@ int main(void) {
     LCD_WriteString(&lcd, "Initializing...");
   #endif
 
+
+  // ####### driving modes #######
+
+  // beim einschalten gashebel gedrueckt halten um modus einzustellen:
+  // Mode 1, links:     3 kmh, ohne Turbo
+  // Mode 2, default:   6 kmh, ohne Turbo
+  // Mode 3, rechts:   12 kmh, ohne Turbo
+  // Mode 4, l + r:    22 kmh, 29 kmh mit Turbo
+
+  int16_t start_links  = adc_buffer.l_rx2;  // ADC1, links, rueckwearts
+  int16_t start_rechts = adc_buffer.l_tx2;  // ADC2, rechts, vorwaerts
+  int8_t mode;
+  HAL_Delay(300);
+  if(start_rechts > (ADC2_MAX - 450) && start_links > (ADC1_MAX - 450)){  // Mode 4
+    mode = 4;
+    beep(4);
+  } else if(start_rechts > (ADC2_MAX - 450)){  // Mode 3
+    mode = 3;
+    beep(3);
+  } else if(start_links > (ADC1_MAX - 450)){  // Mode 1
+    mode = 1;
+    beep(1);
+  } else {  // Mode 2
+    mode = 2;
+    beep(2);
+  }
+  while(adc_buffer.l_tx2 > (ADC2_MAX - 450) || adc_buffer.l_rx2 > (ADC1_MAX - 450)) HAL_Delay(100); //delay in ms, wait until potis released
+
+
   enable = 1;  // enable motors
 
   while(1) {
-    HAL_Delay(5);
+    HAL_Delay(DELAY_IN_MAIN_LOOP); //delay in ms
 
     #ifdef CONTROL_NUNCHUCK
       Nunchuck_Read();
@@ -182,12 +227,12 @@ int main(void) {
 
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
-      cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MIN, 0, ADC1_MAX) / (ADC1_MAX / 1000.0f);  // ADC1
-      cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) / (ADC2_MAX / 1000.0f);  // ADC2
+      // cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MIN, 0, ADC1_MAX) / (ADC1_MAX / 1000.0f);  // ADC1
+      // cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) / (ADC2_MAX / 1000.0f);  // ADC2
 
       // use ADCs as button inputs:
-      button1 = (uint8_t)(adc_buffer.l_tx2 > 2000);  // ADC1
-      button2 = (uint8_t)(adc_buffer.l_rx2 > 2000);  // ADC2
+      // button1 = (uint8_t)(adc_buffer.l_tx2 > 2000);  // ADC1
+      // button2 = (uint8_t)(adc_buffer.l_rx2 > 2000);  // ADC2
 
       timeout = 0;
     #endif
@@ -200,27 +245,74 @@ int main(void) {
     #endif
 
 
+    // ####### larsm's bobby car code #######
+
+    // LOW-PASS FILTER (fliessender Mittelwert)
+    adc1_filtered = adc1_filtered * 0.9 + (float)adc_buffer.l_rx2 * 0.1; // links, rueckwearts
+    adc2_filtered = adc2_filtered * 0.9 + (float)adc_buffer.l_tx2 * 0.1; // rechts, vorwaerts
+
+    // magic numbers die ich nicht mehr nachvollziehen kann, faehrt sich aber gut ;-)
+    #define LOSLASS_BREMS_ACC 0.996f  // naeher an 1 = gemaechlicher
+    #define DRUECK_ACC1 (1.0f - LOSLASS_BREMS_ACC + 0.001f)  // naeher an 0 = gemaechlicher
+    #define DRUECK_ACC2 (1.0f - LOSLASS_BREMS_ACC + 0.001f)  // naeher an 0 = gemaechlicher
+    //die + 0.001f gleichen float ungenauigkeiten aus.
+
+    #define ADC1_DELTA (ADC1_MAX - ADC1_MIN)
+    #define ADC2_DELTA (ADC2_MAX - ADC2_MIN)
+
+    if (mode == 1) {  // Mode 1, links: 3 kmh
+      speedRL = (float)speedRL * LOSLASS_BREMS_ACC  // bremsen wenn kein poti gedrueckt
+              - (CLAMP(adc_buffer.l_rx2 - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / 280.0f)) * DRUECK_ACC1  // links gedrueckt = zusatzbremsen oder rueckwaertsfahren
+              + (CLAMP(adc_buffer.l_tx2 - ADC2_MIN, 0, ADC2_DELTA) / (ADC2_DELTA / 350.0f)) * DRUECK_ACC2;  // vorwaerts gedrueckt = beschleunigen 12s: 350=3kmh
+      weakl = 0;
+      weakr = 0;
+
+    } else if (mode == 2) { // Mode 2, default: 6 kmh
+      speedRL = (float)speedRL * LOSLASS_BREMS_ACC
+              - (CLAMP(adc_buffer.l_rx2 - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / 310.0f)) * DRUECK_ACC1
+              + (CLAMP(adc_buffer.l_tx2 - ADC2_MIN, 0, ADC2_DELTA) / (ADC2_DELTA / 420.0f)) * DRUECK_ACC2;  // 12s: 400=5-6kmh 450=7kmh
+      weakl = 0;
+      weakr = 0;
+
+    } else if (mode == 3) { // Mode 3, rechts: 12 kmh
+      speedRL = (float)speedRL * LOSLASS_BREMS_ACC
+              - (CLAMP(adc_buffer.l_rx2 - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / 340.0f)) * DRUECK_ACC1
+              + (CLAMP(adc_buffer.l_tx2 - ADC2_MIN, 0, ADC2_DELTA) / (ADC2_DELTA / 600.0f)) * DRUECK_ACC2;  // 12s: 600=12kmh
+      weakl = 0;
+      weakr = 0;
+
+    } else if (mode == 4) { // Mode 4, l + r: full kmh
+      // Feldschwaechung wird nur aktiviert wenn man schon sehr schnell ist. So gehts: Rechts voll druecken und warten bis man schnell ist, dann zusaetzlich links schnell voll druecken.
+      if (adc1_filtered > (ADC1_MAX - 450) && speedRL > 800) { // field weakening at high speeds
+        speedRL = (float)speedRL * LOSLASS_BREMS_ACC
+              + (CLAMP(adc_buffer.l_tx2 - ADC2_MIN, 0, ADC2_DELTA) / (ADC2_DELTA / 1000.0f)) * DRUECK_ACC2;
+        weak = weak * 0.95 + 400.0 * 0.05;  // sanftes hinzuschalten des turbos, 12s: 400=29kmh
+      } else { //normale fahrt ohne feldschwaechung
+        speedRL = (float)speedRL * LOSLASS_BREMS_ACC
+              - (CLAMP(adc_buffer.l_rx2 - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / 340.0f)) * DRUECK_ACC1
+              + (CLAMP(adc_buffer.l_tx2 - ADC2_MIN, 0, ADC2_DELTA) / (ADC2_DELTA / 1000.0f)) * DRUECK_ACC2;  // 12s: 1000=22kmh
+        weak = weak * 0.95;  // sanftes abschalten des turbos
+      }
+      weakr = weakl = (int)weak; // weak should never exceed 400 or 450 MAX!!
+    }
+
+    speed = speedR = speedL = CLAMP(speedRL, -1000, 1000);  // clamp output
+
+
     // ####### LOW-PASS FILTER #######
-    steer = steer * (1.0 - FILTER) + cmd1 * FILTER;
-    speed = speed * (1.0 - FILTER) + cmd2 * FILTER;
+    // steer = steer * (1.0 - FILTER) + cmd1 * FILTER;
+    // speed = speed * (1.0 - FILTER) + cmd2 * FILTER;
 
 
     // ####### MIXER #######
-    speedR = CLAMP(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT, -1000, 1000);
-    speedL = CLAMP(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT, -1000, 1000);
+    // speedR = CLAMP(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT, -1000, 1000);
+    // speedL = CLAMP(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT, -1000, 1000);
 
-
-    // ####### DEBUG SERIAL OUT #######
-    #ifdef CONTROL_ADC
-      setScopeChannel(0, (int)adc_buffer.l_tx2);  // ADC1
-      setScopeChannel(1, (int)adc_buffer.l_rx2);  // ADC2
-    #endif
-    setScopeChannel(2, (int)speedR);
-    setScopeChannel(3, (int)speedL);
 
     #ifdef ADDITIONAL_CODE
       ADDITIONAL_CODE;
     #endif
+
 
     // ####### SET OUTPUTS #######
     if ((speedL < lastSpeedL + 50 && speedL > lastSpeedL - 50) && (speedR < lastSpeedR + 50 && speedR > lastSpeedR - 50) && timeout < TIMEOUT) {
@@ -239,9 +331,18 @@ int main(void) {
     lastSpeedL = speedL;
     lastSpeedR = speedR;
 
-    // ####### LOG TO CONSOLE #######
+
+    // ####### DEBUG SERIAL OUT #######
+    #ifdef CONTROL_ADC
+      setScopeChannel(0, (int)adc1_filtered);  // ADC1
+      setScopeChannel(1, (int)adc2_filtered);  // ADC2
+    #endif
+    setScopeChannel(2, (int)speedR);
+    setScopeChannel(3, (int)speedL);
     consoleScope();
 
+
+    // ####### POWEROFF BY POWER-BUTTON #######
     if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
       enable = 0;
       while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {}
@@ -255,6 +356,8 @@ int main(void) {
       while(1) {}
     }
 
+
+    // ####### BATTERY VOLTAGE #######
     if (batteryVoltage < BAT_LOW_LVL1 && batteryVoltage > BAT_LOW_LVL2) {
       buzzerFreq = 5;
       buzzerPattern = 8;
@@ -273,6 +376,24 @@ int main(void) {
     } else {
       buzzerFreq = 0;
       buzzerPattern = 0;
+    }
+
+
+    // ####### INACTIVITY TIMEOUT #######
+    if (abs(speedL) > 50 || abs(speedR) > 50) {
+      inactivity_timeout_counter = 0;
+	} else {
+      inactivity_timeout_counter ++;
+	}
+	if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
+      buzzerPattern = 0;
+      enable = 0;
+      for (int i = 0; i < 8; i++) {
+        buzzerFreq = i;
+        HAL_Delay(100);
+      }
+      HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 0);
+      while(1) {}
     }
   }
 }
