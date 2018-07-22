@@ -333,17 +333,19 @@ int main(void) {
 
 
     // ####### DEBUG SERIAL OUT #######
-    #ifdef CONTROL_ADC
-      setScopeChannel(0, (int)adc1_filtered);  // 1: ADC1
-      setScopeChannel(1, (int)adc2_filtered);  // 2: ADC2
-    #endif
-    setScopeChannel(2, (int)speedR);  // 3:
-    setScopeChannel(3, (int)speedL);  // 4:
-    setScopeChannel(4, (int)adc_buffer.batt1);  // 5: for battery voltage calibration
-    setScopeChannel(5, (int)(batteryVoltage * 100.0f));  // 6: for verifying battery voltage calibration
-    // setScopeChannel(6, (int));  // 7:
-    // setScopeChannel(7, (int));  // 8:
-    consoleScope();
+    if (inactivity_timeout_counter % 25 == 0) {
+      #ifdef CONTROL_ADC
+        setScopeChannel(0, (int)adc1_filtered);  // 1: ADC1
+        setScopeChannel(1, (int)adc2_filtered);  // 2: ADC2
+      #endif
+      setScopeChannel(2, (int)speedR);  // 3:
+      setScopeChannel(3, (int)speedL);  // 4:
+      setScopeChannel(4, (int)adc_buffer.batt1);  // 5: for battery voltage calibration
+      setScopeChannel(5, (int)(batteryVoltage * 100.0f));  // 6: for verifying battery voltage calibration
+      // setScopeChannel(6, (int));  // 7:
+      // setScopeChannel(7, (int));  // 8:
+      consoleScope();
+	}
 
 
     // ####### POWEROFF BY POWER-BUTTON #######
@@ -362,13 +364,16 @@ int main(void) {
 
 
     // ####### BATTERY VOLTAGE #######
-    if (batteryVoltage < ((float)BAT_LOW_LVL1 * (float)BAT_NUMBER_OF_CELLS) && batteryVoltage > ((float)BAT_LOW_LVL2 * (float)BAT_NUMBER_OF_CELLS)) {
+    if (BEEPS_BACKWARD && speed < -50) {  // backward beep
+      buzzerFreq = 5;
+      buzzerPattern = 1;
+    } else if (batteryVoltage < ((float)BAT_LOW_LVL1 * (float)BAT_NUMBER_OF_CELLS) && batteryVoltage > ((float)BAT_LOW_LVL2 * (float)BAT_NUMBER_OF_CELLS) && BAT_LOW_LVL1_ENABLE) {  // low bat 1: slow beep
       buzzerFreq = 5;
       buzzerPattern = 42;
-    } else if (batteryVoltage < ((float)BAT_LOW_LVL2 * (float)BAT_NUMBER_OF_CELLS) && batteryVoltage > ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS)) {
+    } else if (batteryVoltage < ((float)BAT_LOW_LVL2 * (float)BAT_NUMBER_OF_CELLS) && batteryVoltage > ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS) && BAT_LOW_LVL2_ENABLE) {  // low bat 2: fast beep
       buzzerFreq = 5;
       buzzerPattern = 6;
-    } else if (batteryVoltage < ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS) && abs(speedL) < 20 && abs(speedR) < 20) {
+    } else if (batteryVoltage < ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS) && abs(speed) < 20) {  // low bat 3: power off
       buzzerPattern = 0;
       enable = 0;
       for (int i = 0; i < 8; i++) {
@@ -377,7 +382,7 @@ int main(void) {
       }
       HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 0);
       while(1) {}
-    } else {
+    } else {  // do not beep
       buzzerFreq = 0;
       buzzerPattern = 0;
     }
@@ -386,10 +391,10 @@ int main(void) {
     // ####### INACTIVITY TIMEOUT #######
     if (abs(speedL) > 50 || abs(speedR) > 50) {
       inactivity_timeout_counter = 0;
-	} else {
+    } else {
       inactivity_timeout_counter ++;
-	}
-	if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
+    }
+    if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
       buzzerPattern = 0;
       enable = 0;
       for (int i = 0; i < 8; i++) {

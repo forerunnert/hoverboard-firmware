@@ -10,14 +10,16 @@
 
 #define DELAY_IN_MAIN_LOOP 2        // in ms. default 5. it is independent of all the timing critical stuff. do not touch if you do not know what you are doing.
 
-// Battery voltage calibration: connect power source. use multimeter to measure real voltage and write it to BAT_CALIB_REAL_VOLTAGE. watch UART on one of the sensor board cables. write value nr 4 to BAT_CALIB_ADC. make and flash firmware. you can verify voltage on UART debug value 5 (devide it by 100.0 to get calibrated voltage). 
-#define BAT_CALIB_REAL_VOLTAGE        42.0       // input voltage measured by multimeter  
-#define BAT_CALIB_ADC                 1667       // adc-value measured by mainboard (value nr 4 on UART debug output)
+// Battery voltage calibration: connect power source. use multimeter to measure real voltage and write it to BAT_CALIB_REAL_VOLTAGE. watch UART on one of the sensor board cables. write value nr 5 to BAT_CALIB_ADC. make and flash firmware. you can verify voltage on UART debug value 6 (devide it by 100.0 to get calibrated voltage). 
+#define BAT_CALIB_REAL_VOLTAGE        43.0       // input voltage measured by multimeter  
+#define BAT_CALIB_ADC                 1704       // adc-value measured by mainboard (value nr 4 on UART debug output)
 
 #define BAT_NUMBER_OF_CELLS     12        // normal Hoverboard battery: 10s
+#define BAT_LOW_LVL1_ENABLE     0         // to beep or not to beep, 1 or 0
 #define BAT_LOW_LVL1            3.6       // gently beeps at this voltage level. [V/cell]
-#define BAT_LOW_LVL2            3.5       // your battery is almost empty. Charge now!  [V/cell]
-#define BAT_LOW_DEAD            3.37      // undervoltage lockout.  [V/cell]
+#define BAT_LOW_LVL2_ENABLE     1         // to beep or not to beep, 1 or 0
+#define BAT_LOW_LVL2            3.5       // your battery is almost empty. Charge now! [V/cell]
+#define BAT_LOW_DEAD            3.37      // undervoltage lockout. [V/cell]
 
 #define INACTIVITY_TIMEOUT 8        // minutes of not driving until poweroff. it is not very precise.
 
@@ -118,7 +120,7 @@ else {\
   weakl = 0;\
   weakr = 0;
 
-//#define BEEPS_BACKWARD
+#define BEEPS_BACKWARD 1    // 0 or 1
 
 // ################################################################################
 
