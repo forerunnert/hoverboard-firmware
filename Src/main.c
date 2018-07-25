@@ -345,7 +345,7 @@ int main(void) {
       // setScopeChannel(6, (int));  // 7:
       // setScopeChannel(7, (int));  // 8:
       consoleScope();
-	}
+    }
 
 
     // ####### POWEROFF BY POWER-BUTTON #######
