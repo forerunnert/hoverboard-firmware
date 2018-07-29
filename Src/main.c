@@ -87,6 +87,21 @@ void beep(uint8_t anzahl) {  // blocking function, do not use in main loop!
     }
 }
 
+
+void poweroff() {
+    if (abs(speed) < 20) {
+        buzzerPattern = 0;
+        enable = 0;
+        for (int i = 0; i < 8; i++) {
+            buzzerFreq = i;
+            HAL_Delay(100);
+        }
+        HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 0);
+        while(1) {}
+    }
+}
+
+
 int main(void) {
   HAL_Init();
   __HAL_RCC_AFIO_CLK_ENABLE();
@@ -203,6 +218,8 @@ int main(void) {
   }
   while(adc_buffer.l_tx2 > (ADC2_MAX - 450) || adc_buffer.l_rx2 > (ADC1_MAX - 450)) HAL_Delay(100); //delay in ms, wait until potis released
 
+  float board_temp_adc_filtered = (float)adc_buffer.temp;
+  float board_temp_deg_c;
 
   enable = 1;  // enable motors
 
@@ -331,41 +348,39 @@ int main(void) {
     lastSpeedL = speedL;
     lastSpeedR = speedR;
 
-
-    // ####### DEBUG SERIAL OUT #######
     if (inactivity_timeout_counter % 25 == 0) {
+      // ####### CALC BOARD TEMPERATURE #######
+      board_temp_adc_filtered = board_temp_adc_filtered * 0.99 + (float)adc_buffer.temp * 0.01;
+      board_temp_deg_c = ((float)TEMP_CAL_HIGH_DEG_C - (float)TEMP_CAL_LOW_DEG_C) / ((float)TEMP_CAL_HIGH_ADC - (float)TEMP_CAL_LOW_ADC) * (board_temp_adc_filtered - (float)TEMP_CAL_LOW_ADC) + (float)TEMP_CAL_LOW_DEG_C;
+      
+      // ####### DEBUG SERIAL OUT #######
       #ifdef CONTROL_ADC
         setScopeChannel(0, (int)adc1_filtered);  // 1: ADC1
         setScopeChannel(1, (int)adc2_filtered);  // 2: ADC2
       #endif
-      setScopeChannel(2, (int)speedR);  // 3:
-      setScopeChannel(3, (int)speedL);  // 4:
+      setScopeChannel(2, (int)speedR);  // 3: output speed: 0-1000
+      setScopeChannel(3, (int)speedL);  // 4: output speed: 0-1000
       setScopeChannel(4, (int)adc_buffer.batt1);  // 5: for battery voltage calibration
       setScopeChannel(5, (int)(batteryVoltage * 100.0f));  // 6: for verifying battery voltage calibration
-      // setScopeChannel(6, (int));  // 7:
-      // setScopeChannel(7, (int));  // 8:
+      setScopeChannel(6, (int)board_temp_adc_filtered);  // 7: for board temperature calibration
+      setScopeChannel(7, (int)board_temp_deg_c);  // 8: for verifying board temperature calibration
       consoleScope();
     }
 
 
     // ####### POWEROFF BY POWER-BUTTON #######
-    if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {
+    if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && weakr == 0 && weakl == 0) {
       enable = 0;
       while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {}
-      buzzerFreq = 0;
-      buzzerPattern = 0;
-      for (int i = 0; i < 8; i++) {
-        buzzerFreq = i;
-        HAL_Delay(100);
-      }
-      HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 0);
-      while(1) {}
+      poweroff();
     }
 
-
-    // ####### BATTERY VOLTAGE #######
-    if (BEEPS_BACKWARD && speed < -50) {  // backward beep
-      buzzerFreq = 5;
+    
+    // ####### BEEP AND EMERGENCY POWEROFF #######
+    if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && abs(speed) < 20) || (batteryVoltage < ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS) && abs(speed) < 20)) {  // poweroff before mainboard burns OR low bat 3
+      poweroff();
+    } else if (TEMP_WARNING_ENABLE && board_temp_deg_c >= TEMP_WARNING) {  // beep if mainboard gets hot
+      buzzerFreq = 4;
       buzzerPattern = 1;
     } else if (batteryVoltage < ((float)BAT_LOW_LVL1 * (float)BAT_NUMBER_OF_CELLS) && batteryVoltage > ((float)BAT_LOW_LVL2 * (float)BAT_NUMBER_OF_CELLS) && BAT_LOW_LVL1_ENABLE) {  // low bat 1: slow beep
       buzzerFreq = 5;
@@ -373,15 +388,9 @@ int main(void) {
     } else if (batteryVoltage < ((float)BAT_LOW_LVL2 * (float)BAT_NUMBER_OF_CELLS) && batteryVoltage > ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS) && BAT_LOW_LVL2_ENABLE) {  // low bat 2: fast beep
       buzzerFreq = 5;
       buzzerPattern = 6;
-    } else if (batteryVoltage < ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS) && abs(speed) < 20) {  // low bat 3: power off
-      buzzerPattern = 0;
-      enable = 0;
-      for (int i = 0; i < 8; i++) {
-        buzzerFreq = i;
-        HAL_Delay(100);
-      }
-      HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 0);
-      while(1) {}
+    } else if (BEEPS_BACKWARD && speed < -50) {  // backward beep
+      buzzerFreq = 5;
+      buzzerPattern = 1;
     } else {  // do not beep
       buzzerFreq = 0;
       buzzerPattern = 0;
@@ -395,14 +404,7 @@ int main(void) {
       inactivity_timeout_counter ++;
     }
     if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
-      buzzerPattern = 0;
-      enable = 0;
-      for (int i = 0; i < 8; i++) {
-        buzzerFreq = i;
-        HAL_Delay(100);
-      }
-      HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 0);
-      while(1) {}
+      poweroff();
     }
   }
 }
