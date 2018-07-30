@@ -1,61 +1,30 @@
-This firmware is much better than the old one. tested up to 40A / 60V, no dead board so far :)
+## hoverboard-firmware-hack - bobby car edition
 
-## hoverboard-firmware-hack
+This repo contains a 4-wheel-drive-bobbycar-optimized version of the hoverboard mainboard firmware by rene-dev, crinq and NiklasFauth )  https://github.com/NiklasFauth/hoverboard-firmware-hack)
 
-This repo contains open source firmware for generic Hoverboard Mainboards.
-The firmware you can find here allows you to use your Hoverboard Hardware (like the Mainboard, Motors and Battery) for cool projects like driving armchairs, person-tracking transportation robots and every other application you can imagine that requires controlling the Motors.
-
-If you want an overview of what you can do with this firmware, here is a ~40min video of a talk about this project:
-https://media.ccc.de/v/gpn18-95-howto-moving-objects
-
----
-
-#### Hardware
-![otter](https://raw.githubusercontent.com/NiklasFauth/hoverboard-firmware-hack/master/pinout.png)
-
-The original Hardware supports two 4-pin cables that originally were connected to the two sensor boards. They break out GND, 12/15V and USART2&3 of the Hoverboard mainboard.
-Both USART2 & 3 can be used for UART and I2C, PA2&3 can be used as 12bit ADCs.
-
-The reverse-engineered schematics of the mainboard can be found here:
-http://vocke.tv/lib/exe/fetch.php?media=20150722_hoverboard_sch.pdf
-
----
-
-#### Flashing
-To build the firmware, just type "make". Make sure you have specified your gcc-arm-none-eabi binary location in the Makefile ("PREFIX = ..."). Right to the STM32, there is a debugging header with GND, 3V3, SWDIO and SWCLK. Connect GND, SWDIO and SWCLK to your SWD programmer, like the ST-Link found on many STM devboards.
-
-Make sure you hold the powerbutton or connect a jumper to the power button pins while flashing the firmware, as the STM might release the power latch and switches itself off during flashing. Battery > 36V have to be connected while flashing.
-
-To flash the STM32, use the ST-Flash utility (https://github.com/texane/stlink).
-
-If you never flashed your mainboard before, the STM is probably locked. To unlock the flash, use the following OpenOCD command:
-
-```
-openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg -c init -c "reset halt" -c "stm32f1x unlock 0"
-```
-Then you can simply flash the firmware:
-```
-st-flash --reset write build/hover.bin 0x8000000
-```
-
----
-#### Troubleshooting
-First, check that power is connected and voltage is >36V while flashing.
-If the board draws more than 100mA in idle, it's probably broken.
-
-If the motors do something, but don't rotate smooth and quietly, try to use an alternative phase mapping. Usually, color-correct mapping (blue to blue, green to green, yellow to yellow) works fine. However, some hoverboards have a different layout then others, and this might be the reason your motor isn't spinning.
-
-Nunchuck not working: Use the right one of the 2 types of nunchucks. Use i2c pullups.
-
-Nunchuck or PPM working bad: The i2c bus and PPM signal are very sensitive to emv distortions of the motor controller. They get stronger the faster you are. Keep cables short, use shielded cable, use ferrits, stabalize voltage in nunchuck or reviever, add i2c pullups. To many errors leads to very high accelerations which triggers the protection board within the battery to shut everything down.
-
-Most robust way for input is to use the ADC and potis. It works well even on 1m unshielded cable. Solder ~100k Ohm resistors between ADC-inputs and gnd directly on the mainboard. Use potis as pullups to 3.3V.
-
----
+Here the additional features of my version of the firmware:
+* controlled by 2 potis on the steering wheel: 1. forward, 2. break or backward or turbo mode
+* 4 driving modes with different speed, acceleration and features
+* acceleration and breaking ramps
 
 
-#### Examples
+### Driving modes:
+You can activate them by holding one or more of the potis while poweron. (km/h @ full 12s battery):
+Mode 1 - Child: left poti, max speed ~3 km/h, very slow backwards, no turbo
+Mode 2 - STVO: no poti, max speed ~<6 km/h (verify it), slow backwards, no turbo
+Mode 3 - Fun: rechter poti, max speed ~12 km/h, no turbo
+Mode 4 - Power: both potis, max speed ~22 km/h, with turbo ~29 km/h
 
-Have a look at the config.h in the Inc directory. That's where you configure to firmware to match your project.
-Currently supported: Wii Nunchuck, analog potentiometer and PPM-Sum signal from a RC remote.
-If you need additional features like a boost button, have a look at the while(1) loop in the main.c
+After poweron it beeps the mode in 1 to 4 fast beeps. default mode is nr. 2.
+
+### Turbo:
+Field weakening is only availible in mode 4. It can only be activated if you are already at 80% of top speed. To activate it, press the backwards poti to get additional 40% more power :) Please be very careful, this speed is dangarous.
+
+### Power and battery:
+Peak power is aroung 34A = 1800W at 12 lithium battery cells. more power does not make much sense. the wheels are not able to get the power onto the ground. cooling of the board is no problem, the wheels will get too hot earlier. you will get around 20 km out of a 8 Ah 12s battery.
+
+### more infos
+
+larsm.org
+
+to be contignued...
