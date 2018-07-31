@@ -26,7 +26,7 @@ Field weakening is only availible in mode 4. It can only be activated if you are
 Peak power is around 34A = 1800W at 12 lithium battery cells. more power does not make much sense. the wheels are not able to get the power onto the ground. cooling of the board is no problem, the wheels will get too hot earlier. you will get around 20 km out of a 8 Ah 12s battery.
 
 ### more info
-https://larsm.org/allrad-e-bobby-car/
-https://figch.de/index.php?nav=bobbycar
+* https://larsm.org/allrad-e-bobby-car/
+* https://figch.de/index.php?nav=bobbycar
 
 to be continued...
