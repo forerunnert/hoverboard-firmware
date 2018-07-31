@@ -7,7 +7,7 @@ This repo contains a 4-wheel-drive-bobbycar-optimized version of the hoverboard 
 ### Features
 * controlled by 2 potis on the steering wheel: 1. forward, 2. break or backward or turbo mode
 * 4 driving modes with different speed, acceleration and features
-* acceleration and breaking ramps
+* acceleration and breaking ramps, turbo ramp
 * everything else is identical to: https://github.com/NiklasFauth/hoverboard-firmware-hack
 
 ### Driving modes
