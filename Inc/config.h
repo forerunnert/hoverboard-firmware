@@ -18,7 +18,7 @@
 #define BAT_CALIB_REAL_VOLTAGE        43.0       // input voltage measured by multimeter  
 #define BAT_CALIB_ADC                 1704       // adc-value measured by mainboard (value nr 5 on UART debug output)
 
-#define BAT_NUMBER_OF_CELLS     12        // normal Hoverboard battery: 10s
+#define BAT_NUMBER_OF_CELLS     10        // normal Hoverboard battery: 10s
 #define BAT_LOW_LVL1_ENABLE     0         // to beep or not to beep, 1 or 0
 #define BAT_LOW_LVL1            3.6       // gently beeps at this voltage level. [V/cell]
 #define BAT_LOW_LVL2_ENABLE     1         // to beep or not to beep, 1 or 0
@@ -84,7 +84,7 @@
 
 #define FILTER              0.1  // lower value == softer filter. do not use values <0.01, you will get float precision issues.
 #define SPEED_COEFFICIENT   0.5  // higher value == stronger. 0.0 to ~2.0?
-#define STEER_COEFFICIENT   0.5  // higher value == stronger. if you do not want any steering, set it to 0.0; 0.0 to 1.0
+#define STEER_COEFFICIENT   0.0  // higher value == stronger. if you do not want any steering, set it to 0.0; 0.0 to 1.0
 #define INVERT_R_DIRECTION
 #define INVERT_L_DIRECTION
 #define BEEPS_BACKWARD 1    // 0 or 1
