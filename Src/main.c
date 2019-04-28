@@ -203,19 +203,23 @@ int main(void) {
   int16_t start_rechts = adc_buffer.l_tx2;  // ADC2, rechts, vorwaerts
   int8_t mode;
   HAL_Delay(300);
-  if(start_rechts > (ADC2_MAX - 450) && start_links > (ADC1_MAX - 450)){  // Mode 4
-    mode = 4;
-    beep(4);
-  } else if(start_rechts > (ADC2_MAX - 450)){  // Mode 3
-    mode = 3;
-    beep(3);
-  } else if(start_links > (ADC1_MAX - 450)){  // Mode 1
-    mode = 1;
-    beep(1);
-  } else {  // Mode 2
-    mode = 2;
-    beep(2);
-  }
+  
+  mode = 1;
+  beep(1);
+//  if(start_rechts > (ADC2_MAX - 450) && start_links > (ADC1_MAX - 450)){  // Mode 4
+//    mode = 4;
+//    beep(4);
+//  } else if(start_rechts > (ADC2_MAX - 450)){  // Mode 3
+//    mode = 3;
+//    beep(3);
+// } else if(start_links > (ADC1_MAX - 450)){  // Mode 1
+//    mode = 1;
+//    beep(1);
+//  } else {  // Mode 2
+//    mode = 2;
+//   beep(2);
+//  }
+
   while(adc_buffer.l_tx2 > (ADC2_MAX - 450) || adc_buffer.l_rx2 > (ADC1_MAX - 450)) HAL_Delay(100); //delay in ms, wait until potis released
 
   float board_temp_adc_filtered = (float)adc_buffer.temp;
