@@ -1,0 +1,22 @@
+mich@Mint-D9510:~/Documents/cnc/Designs/Hoverboard/hoverboard-firmware-hack-bbcar$ st-flash --reset write build/hover.bin 0x8000000
+st-flash 1.5.1-25-gcf67780
+2019-06-14T13:14:11 INFO usb.c: -- exit_dfu_mode
+2019-06-14T13:14:11 INFO common.c: Loading device parameters....
+2019-06-14T13:14:11 INFO common.c: Device connected is: F1 High-density device, id 0x10036414
+2019-06-14T13:14:11 INFO common.c: SRAM size: 0x10000 bytes (64 KiB), Flash: 0x40000 bytes (256 KiB) in pages of 2048 bytes
+2019-06-14T13:14:11 INFO common.c: Attempting to write 18208 (0x4720) bytes to stm32 address: 134217728 (0x8000000)
+Flash page at addr: 0x08004000 erased
+2019-06-14T13:14:12 INFO common.c: Finished erasing 9 pages of 2048 (0x800) bytes
+2019-06-14T13:14:12 INFO common.c: Starting Flash write for VL/F0/F3/F1_XL core id
+2019-06-14T13:14:12 INFO flash_loader.c: Successfully loaded flash loader in sram
+2019-06-14T13:14:32 ERROR flash_loader.c: flash loader run error
+2019-06-14T13:14:32 ERROR common.c: stlink_flash_loader_run(0x8000000) failed! == -1
+stlink_fwrite_flash() == -1
+
+
+mich@Mint-D9510:~/Documents/cnc/Designs/Hoverboard/hoverboard-firmware-hack-bbcar$ st-flash --reset write build/hover.bin 0x8000000
+st-flash 1.5.1-25-gcf67780
+2019-06-14T13:15:54 INFO common.c: Loading device parameters....
+2019-06-14T13:15:54 WARN common.c: Invalid flash type, please check device declaration
+Unknown memory region
+

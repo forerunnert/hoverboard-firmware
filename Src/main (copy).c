@@ -23,10 +23,7 @@
 #include "defines.h"
 #include "setup.h"
 #include "config.h"
-#include "hd44780.h"
-
-LCD_PCF8574_HandleTypeDef lcd;
-
+//#include "hd44780.h"
 
 void SystemClock_Config(void);
 
@@ -35,6 +32,7 @@ extern TIM_HandleTypeDef htim_right;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 extern volatile adc_buf_t adc_buffer;
+//LCD_PCF8574_HandleTypeDef lcd;
 extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart2;
 
@@ -92,12 +90,6 @@ void beep(uint8_t anzahl) {  // blocking function, do not use in main loop!
 
 void poweroff() {
     if (abs(speed) < 20) {
-        LCD_ClearDisplay(&lcd);
-        HAL_Delay(50);
-        LCD_SetLocation(&lcd, 0, 0);
-        LCD_WriteString(&lcd, "Power off");
-        LCD_SetLocation(&lcd, 0, 1);
-        LCD_WriteString(&lcd, "Goodbye!");
         buzzerPattern = 0;
         enable = 0;
         for (int i = 0; i < 8; i++) {
@@ -178,7 +170,7 @@ int main(void) {
 
   #ifdef DEBUG_I2C_LCD
     I2C_Init();
-    HAL_Delay(100);
+    HAL_Delay(50);
     lcd.pcf8574.PCF_I2C_ADDRESS = 0x27;
       lcd.pcf8574.PCF_I2C_TIMEOUT = 5;
       lcd.pcf8574.i2c = hi2c2;
@@ -193,10 +185,11 @@ int main(void) {
     LCD_ClearDisplay(&lcd);
     HAL_Delay(5);
     LCD_SetLocation(&lcd, 0, 0);
-    LCD_WriteString(&lcd, "Get Ready!");
+    LCD_WriteString(&lcd, "Hover V2.0");
     LCD_SetLocation(&lcd, 0, 1);
-    LCD_WriteString(&lcd, "Waiting to arm");
+    LCD_WriteString(&lcd, "Initializing...");
   #endif
+
 
   // ####### driving modes #######
 
@@ -210,23 +203,19 @@ int main(void) {
   int16_t start_rechts = adc_buffer.l_tx2;  // ADC2, rechts, vorwaerts
   int8_t mode;
   HAL_Delay(300);
-  
-  mode = MODE;
-  beep(2);
-//  if(start_rechts > (ADC2_MAX - 450) && start_links > (ADC1_MAX - 450)){  // Mode 4
-//    mode = 4;
-//    beep(4);
-//  } else if(start_rechts > (ADC2_MAX - 450)){  // Mode 3
-//    mode = 3;
-//    beep(3);
-// } else if(start_links > (ADC1_MAX - 450)){  // Mode 1
-//    mode = 1;
-//    beep(1);
-//  } else {  // Mode 2
-//    mode = 2;
-//   beep(2);
-//  }
-
+  if(start_rechts > (ADC2_MAX - 450) && start_links > (ADC1_MAX - 450)){  // Mode 4
+    mode = 4;
+    beep(4);
+  } else if(start_rechts > (ADC2_MAX - 450)){  // Mode 3
+    mode = 3;
+    beep(3);
+  } else if(start_links > (ADC1_MAX - 450)){  // Mode 1
+    mode = 1;
+    beep(1);
+  } else {  // Mode 2
+    mode = 2;
+    beep(2);
+  }
   while(adc_buffer.l_tx2 > (ADC2_MAX - 450) || adc_buffer.l_rx2 > (ADC1_MAX - 450)) HAL_Delay(100); //delay in ms, wait until potis released
 
   float board_temp_adc_filtered = (float)adc_buffer.temp;
@@ -236,52 +225,6 @@ int main(void) {
 
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP); //delay in ms
-
-    // ####### BATTERY VOLTAGE INDICATOR ######
-    /*Voltage --- Charge state
-    4.2 V --- 100 %
-    4.1 V --- 90 %
-    4.0 V --- 80 %
-    3.9 V --- 60 %
-    3.8 V --- 40 %
-    3.7 V --- 20 %
-    3.6 V --- 0 %
-    voltage = (batteryVoltage * (float)BAT_NUMBER_OF_CELLS)
-    (int)(batteryVoltage * 100.0f))
-    batteryPercent = (batteryVoltage - 3.6)/0.6*100.0f
-
-    */
-    LCD_ClearDisplay(&lcd);
-    LCD_SetLocation(&lcd, 0, 0);
-
-    if(batteryVoltage/(float)BAT_NUMBER_OF_CELLS < BAT_LOW_LVL2){
-        LCD_WriteString(&lcd, "BATTERY EMPTY");
-    } else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > BAT_LOW_LVL2 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= BAT_LOW_LVL1){
-        LCD_WriteString(&lcd, "Battery 0%");
-    } else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.6 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 3.7){
-        LCD_WriteString(&lcd, "Battery 20%");
-    } else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.7 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 3.8){
-        LCD_WriteString(&lcd, "Battery 40%");
-    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.8 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 3.9){
-        LCD_WriteString(&lcd, "Battery 60%");
-    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.9 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 4.0){
-        LCD_WriteString(&lcd, "Battery 80%");
-    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 4.0 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 4.1){
-        LCD_WriteString(&lcd, "Battery 90%");
-    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 4.2){
-        LCD_WriteString(&lcd, "Battery 100%");
-    }
-    LCD_SetLocation(&lcd, 13, 0);
-    LCD_WriteNumber(&lcd, batteryVoltage, 0);
-    LCD_SetLocation(&lcd, 15, 0);
-    LCD_WriteString(&lcd, "V");
-
-
-    // speed
-    LCD_SetLocation(&lcd, 0, 1);
-    LCD_WriteString(&lcd, "Speed");
-    LCD_SetLocation(&lcd, 8, 1);
-    LCD_WriteNumber(&lcd, abs(speedRL), 1);
 
     #ifdef CONTROL_NUNCHUCK
       Nunchuck_Read();
@@ -299,19 +242,14 @@ int main(void) {
       float scale = ppm_captured_value[2] / 1000.0f;
     #endif
 
-
     #ifdef CONTROL_ADC
       // ADC values range: 0-4095, see ADC-calibration in config.h
-      //cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MIN, 0, ADC1_MAX) / (ADC1_MAX / 1000.0f);  // ADC1
-      //cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) / (ADC2_MAX / 1000.0f);  // ADC2
+      // cmd1 = CLAMP(adc_buffer.l_tx2 - ADC1_MIN, 0, ADC1_MAX) / (ADC1_MAX / 1000.0f);  // ADC1
+      // cmd2 = CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) / (ADC2_MAX / 1000.0f);  // ADC2
 
       // use ADCs as button inputs:
-      //#ifdef ADC1_BUTTON
-      //  button1 = (uint8_t)(adc_buffer.l_tx2 > 2000);  // ADC1
-      //#endif
-      //#ifdef ADC2_BUTTON
-      //  button2 = (uint8_t)(adc_buffer.l_rx2 > 2000);  // ADC2
-      //#endif
+      // button1 = (uint8_t)(adc_buffer.l_tx2 > 2000);  // ADC1
+      // button2 = (uint8_t)(adc_buffer.l_rx2 > 2000);  // ADC2
 
       timeout = 0;
     #endif
@@ -322,6 +260,7 @@ int main(void) {
 
       timeout = 0;
     #endif
+
 
     // ####### larsm's bobby car code #######
 
@@ -335,53 +274,9 @@ int main(void) {
     #define DRUECK_ACC2 (1.0f - LOSLASS_BREMS_ACC + 0.001f)  // naeher an 0 = gemaechlicher
     //die + 0.001f gleichen float ungenauigkeiten aus.
 
-    // ADC1 = rx2, throttle, ADC2 = tx2, FWD/REV
     #define ADC1_DELTA (ADC1_MAX - ADC1_MIN)
     #define ADC2_DELTA (ADC2_MAX - ADC2_MIN)
 
-    float throttle_input = adc_buffer.l_rx2;
-    float throttle_setpoint = 0; // STOP
-    float throttle_param;
-
-    float shift_input = adc_buffer.l_tx2;
-    //float shift_setpoint = 0;
-    float shift_setpoint;
-    float shift_param;
-
-    if (mode == 1) {  // Mode 1, links: 3 kmh
-      shift_param = 280.0f;
-      throttle_param = 350.0f;
-    } else if (mode == 2) { // Mode 2, default: 6 kmh
-      shift_param = 310.0f;
-      throttle_param = 420.0f;
-    } else if (mode = 3) { // Mode 3, rechts:  9 kmh
-      shift_param = 340.0f;
-      throttle_param = 520.0f;
-    } else if (mode = 4) { // Mode 4, rechts: 12 kmh
-      shift_param = 340.0f;
-      throttle_param = 600.0f;
-    } else if (mode = 5) { // Mode 5, l + r: full kmh
-      shift_param = 340.0f;
-      throttle_param = 1000.0f;
-    }
-
-    if (shift_input > ADC2_CENTER + 200) {
-        shift_setpoint = 1; // FWD
-    } else if (shift_input < ADC2_CENTER + 200 && shift_input > ADC2_CENTER - 200) {
-        shift_setpoint = 0; // STOP
-    } else if (shift_input < ADC2_CENTER - 200) {
-        shift_setpoint = -0.5; // REV
-    }
-
-    speedRL = (float)speedRL * LOSLASS_BREMS_ACC  // bremsen wenn kein poti gedrueckt
-            + (CLAMP(throttle_input - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / throttle_param)) * DRUECK_ACC2;  // vorwaerts gedrueckt = beschleunigen 12s: 350=3kmh
-
-    weakl = 0;
-    weakr = 0;
-    speed = speedR = speedL = shift_setpoint*(CLAMP(speedRL, -1000, 1000));  // clamp output
-
-
-    /*
     if (mode == 1) {  // Mode 1, links: 3 kmh
       speedRL = (float)speedRL * LOSLASS_BREMS_ACC  // bremsen wenn kein poti gedrueckt
               - (CLAMP(adc_buffer.l_rx2 - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / 280.0f)) * DRUECK_ACC1  // links gedrueckt = zusatzbremsen oder rueckwaertsfahren
@@ -419,7 +314,7 @@ int main(void) {
     }
 
     speed = speedR = speedL = CLAMP(speedRL, -1000, 1000);  // clamp output
-    */
+
 
     // ####### LOW-PASS FILTER #######
     // steer = steer * (1.0 - FILTER) + cmd1 * FILTER;
@@ -500,6 +395,7 @@ int main(void) {
       buzzerFreq = 0;
       buzzerPattern = 0;
     }
+
 
     // ####### INACTIVITY TIMEOUT #######
     if (abs(speedL) > 50 || abs(speedR) > 50) {

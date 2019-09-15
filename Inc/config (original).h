@@ -12,30 +12,22 @@
 
 // ############################### GENERAL ###############################
 
-// How to calibrate: connect GND and RX of a 3.3v uart-usb adapter to the right sensor board cable
-// (be careful not to use the red wire of the cable. 15v will destroye verything.).
-// if you are using nunchuck, disable it temporarily. enable DEBUG_SERIAL_USART3 and DEBUG_SERIAL_ASCII use a searial terminal.
+// How to calibrate: connect GND and RX of a 3.3v uart-usb adapter to the right sensor board cable (be careful not to use the red wire of the cable. 15v will destroye verything.). if you are using nunchuck, disable it temporarily. enable DEBUG_SERIAL_USART3 and DEBUG_SERIAL_ASCII use asearial terminal.
 
-// Battery voltage calibration: connect power source. see <How to calibrate>. write value nr 5 to BAT_CALIB_ADC. make and flash firmware.
-// then you can verify voltage on value 6 (devide it by 100.0 to get calibrated voltage).
-#define BAT_CALIB_REAL_VOLTAGE        39.0       // input voltage measured by multimeter  
-#define BAT_CALIB_ADC                 1475       // adc-value measured by mainboard (value nr 5 on UART debug output)
+// Battery voltage calibration: connect power source. see <How to calibrate>. write value nr 5 to BAT_CALIB_ADC. make and flash firmware. then you can verify voltage on value 6 (devide it by 100.0 to get calibrated voltage).
+#define BAT_CALIB_REAL_VOLTAGE        43.0       // input voltage measured by multimeter  
+#define BAT_CALIB_ADC                 1704       // adc-value measured by mainboard (value nr 5 on UART debug output)
 
-#define BAT_NUMBER_OF_CELLS     10        // normal Hoverboard battery: 10s
-#define BAT_LOW_LVL1_ENABLE     1         // to beep or not to beep, 1 or 0
+#define BAT_NUMBER_OF_CELLS     12        // normal Hoverboard battery: 10s
+#define BAT_LOW_LVL1_ENABLE     0         // to beep or not to beep, 1 or 0
 #define BAT_LOW_LVL1            3.6       // gently beeps at this voltage level. [V/cell]
 #define BAT_LOW_LVL2_ENABLE     1         // to beep or not to beep, 1 or 0
 #define BAT_LOW_LVL2            3.5       // your battery is almost empty. Charge now! [V/cell]
 #define BAT_LOW_DEAD            3.37      // undervoltage poweroff. (while not driving) [V/cell]
 
-#define DC_CUR_LIMIT     25         // DC current limit in amps per motor. ~ 35A max per motor, so 15 means it will draw 30A out of your battery.
-// it does not disable motors, it is a soft current limit.
+#define DC_CUR_LIMIT     15         // DC current limit in amps per motor. so 15 means it will draw 30A out of your battery. it does not disable motors, it is a soft current limit.
 
-// Board overheat detection: the sensor is inside the STM/GD chip. it is very inaccurate without calibration (up to 45°C).
-// so only enable this function after calibration! let your board cool down. see <How to calibrate>.
-// get the real temp of the chip by thermo cam or another temp-sensor taped on top of the chip and write it to TEMP_CAL_LOW_DEG_C.
-// write debug value 8 to TEMP_CAL_LOW_ADC. drive around to warm up the board. it should be at least 20°C warmer.
-// repeat it for the HIGH-values. enable warning and/or poweroff and make and flash firmware.
+// Board overheat detection: the sensor is inside the STM/GD chip. it is very inaccurate without calibration (up to 45°C). so only enable this funcion after calibration! let your board cool down. see <How to calibrate>. get the real temp of the chip by thermo cam or another temp-sensor taped on top of the chip and write it to TEMP_CAL_LOW_DEG_C. write debug value 8 to TEMP_CAL_LOW_ADC. drive around to warm up the board. it should be at least 20°C warmer. repeat it for the HIGH-values. enable warning and/or poweroff and make and flash firmware.
 #define TEMP_CAL_LOW_ADC        1655      // temperature 1: ADC value
 #define TEMP_CAL_LOW_DEG_C      35.8      // temperature 1: measured temperature [°C]
 #define TEMP_CAL_HIGH_ADC       1588      // temperature 2: ADC value
@@ -47,11 +39,11 @@
 
 #define INACTIVITY_TIMEOUT 8        // minutes of not driving until poweroff. it is not very precise.
 
-#define DEBUG_I2C_LCD             // standard 16x2 or larger text-lcd via i2c-converter on right sensor board cable
+//#define DEBUG_I2C_LCD             // standard 16x2 or larger text-lcd via i2c-converter on right sensor board cable
 
 // ############################### SERIAL DEBUG ###############################
 
-//#define DEBUG_SERIAL_USART3         // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
+#define DEBUG_SERIAL_USART3         // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
 #define DEBUG_BAUD       115200     // UART baud rate
 //#define DEBUG_SERIAL_SERVOTERM
 #define DEBUG_SERIAL_ASCII          // "1:345 2:1337 3:0 4:0 5:0 6:0 7:0 8:0\r\n"
@@ -60,7 +52,7 @@
 
 // ###### CONTROL VIA UART (serial) ######
 //#define CONTROL_SERIAL_USART2       // left sensor board cable, disable if ADC or PPM is used!
-//#define CONTROL_BAUD       19200    // control via usart from eg an Arduino or raspberry
+#define CONTROL_BAUD       19200    // control via usart from eg an Arduino or raspberry
 // for Arduino, use void loop(void){ Serial.write((uint8_t *) &steer, sizeof(steer)); Serial.write((uint8_t *) &speed, sizeof(speed));delay(20); }
 
 // ###### CONTROL VIA RC REMOTE ######
@@ -70,20 +62,11 @@
 
 // ###### CONTROL VIA TWO POTENTIOMETERS ######
 // ADC-calibration to cover the full poti-range: connect potis to left sensor board cable (0 to 3.3V) (do NOT use the red 15V wire in the cable!). see <How to calibrate>. turn the potis to minimum position, write value 1 to ADC1_MIN and value 2 to ADC2_MIN. turn to maximum position and repeat it for ADC?_MAX. make, flash and test it.
-#define CONTROL_ADC     // use ADC as input. disable DEBUG_SERIAL_USART2!
-// ADC1 = tx2, throttle, ADC2 = rx2, FWD/REV
-#define ADC1_MIN 504    // min ADC1-value while poti at minimum-position (0 - 4095)
-#define ADC1_MAX 2535   // max ADC1-value while poti at maximum-position (0 - 4095)
-#define ADC2_MIN 464    // min ADC2-value while poti at minimum-position (0 - 4095)
-#define ADC2_CENTER 464 // ADC2-value while in center position
-#define ADC2_MAX 3110   // max ADC2-value while poti at maximum-position (0 - 4095)
-
-#define MODE 3          // driving mode:
-                        // Mode 1, 3 kmh, ohne Turbo
-                        // Mode 2, default:   6 kmh, ohne Turbo
-                        // Mode 3, 9 kmh, ohne Turbo
-                        // Mode 4, 12 kmh, ohne Turbo
-                        // Mode 5, 22 kmh, 29 kmh mit Turbo
+#define CONTROL_ADC                 // use ADC as input. disable DEBUG_SERIAL_USART2!
+#define ADC1_MIN 350                // min ADC1-value while poti at minimum-position (0 - 4095)
+#define ADC1_MAX 3230               // max ADC1-value while poti at maximum-position (0 - 4095)
+#define ADC2_MIN 375                // min ADC2-value while poti at minimum-position (0 - 4095)
+#define ADC2_MAX 3230               // max ADC2-value while poti at maximum-position (0 - 4095)
 
 // ###### CONTROL VIA NINTENDO NUNCHUCK ######
 // left sensor board cable. keep cable short, use shielded cable, use ferrits, stabalize voltage in nunchuck, use the right one of the 2 types of nunchucks, add i2c pullups. use original nunchuck. most clones does not work very well.
@@ -101,7 +84,7 @@
 
 #define FILTER              0.1  // lower value == softer filter. do not use values <0.01, you will get float precision issues.
 #define SPEED_COEFFICIENT   0.5  // higher value == stronger. 0.0 to ~2.0?
-#define STEER_COEFFICIENT   0.0  // higher value == stronger. if you do not want any steering, set it to 0.0; 0.0 to 1.0
+#define STEER_COEFFICIENT   0.5  // higher value == stronger. if you do not want any steering, set it to 0.0; 0.0 to 1.0
 #define INVERT_R_DIRECTION
 #define INVERT_L_DIRECTION
 #define BEEPS_BACKWARD 1    // 0 or 1
