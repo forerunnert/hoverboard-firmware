@@ -24,12 +24,7 @@
 #include "setup.h"
 #include "config.h"
 #include "hd44780.h"
-
 LCD_PCF8574_HandleTypeDef lcd;
-
-
-void SystemClock_Config(void);
-
 extern TIM_HandleTypeDef htim_left;
 extern TIM_HandleTypeDef htim_right;
 extern ADC_HandleTypeDef hadc1;
@@ -69,8 +64,21 @@ extern uint8_t enable; // global variable for motor enable
 
 extern volatile uint32_t timeout; // global variable for timeout
 extern float batteryVoltage; // global variable for battery voltage
+extern volatile float currentR; //TODO
+extern volatile float currentL; //TODO
+
+unsigned char bat_13[8] = { 0xe, 0x1b, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1f};
+unsigned char bat_25[8] = { 0xe, 0x1b, 0x11, 0x11, 0x11, 0x11, 0x1f, 0x1f};
+unsigned char bat_38[8] = { 0xe, 0x1b, 0x11, 0x11, 0x11, 0x1f, 0x1f, 0x1f};
+unsigned char bat_50[8] = { 0xe, 0x1b, 0x11, 0x11, 0x1f, 0x1f, 0x1f, 0x1f};
+unsigned char bat_63[8] = { 0xe, 0x1b, 0x11, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f};
+unsigned char bat_75[8] = { 0xe, 0x1b, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f};
+unsigned char bat_88[8] = { 0xe, 0x11, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f};
+unsigned char bat_100[8] ={ 0xe, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f};
 
 uint32_t inactivity_timeout_counter;
+uint32_t lcd_update_counter=0;
+uint32_t lcd_refresh = 20;
 
 extern uint8_t nunchuck_data[6];
 #ifdef CONTROL_PPM
@@ -98,6 +106,7 @@ void poweroff() {
         LCD_WriteString(&lcd, "Power off");
         LCD_SetLocation(&lcd, 0, 1);
         LCD_WriteString(&lcd, "Goodbye!");
+        HAL_Delay(100);
         buzzerPattern = 0;
         enable = 0;
         for (int i = 0; i < 8; i++) {
@@ -109,6 +118,97 @@ void poweroff() {
     }
 }
 
+void initializeLCD(){
+	I2C_Init();
+    HAL_Delay(100);
+    lcd.pcf8574.PCF_I2C_ADDRESS = 0x27;
+      lcd.pcf8574.PCF_I2C_TIMEOUT = 1000;
+      lcd.pcf8574.i2c = hi2c2;
+      lcd.pcf8574.i2c.Init.ClockSpeed = 100000;
+      lcd.NUMBER_OF_LINES = NUMBER_OF_LINES_2;
+      lcd.type = TYPE0;
+
+      if(LCD_Init(&lcd)!=LCD_OK){
+          // error occured
+          //TODO while(1);
+      }
+
+	// create symbols
+	LCD_CustomChar(&lcd, bat_13, 0);
+	LCD_CustomChar(&lcd, bat_25, 1);
+	LCD_CustomChar(&lcd, bat_38, 2);
+	LCD_CustomChar(&lcd, bat_50, 3);
+	LCD_CustomChar(&lcd, bat_63, 4);
+	LCD_CustomChar(&lcd, bat_75, 5);
+	LCD_CustomChar(&lcd, bat_88, 6);
+	LCD_CustomChar(&lcd, bat_100, 7);
+	
+    LCD_ClearDisplay(&lcd);
+    HAL_Delay(10);
+    LCD_SetLocation(&lcd, 0, 0);
+    LCD_WriteString(&lcd, "Get Ready!");
+    LCD_SetLocation(&lcd, 0, 1);
+    LCD_WriteString(&lcd, "Waiting to arm");
+}
+
+
+void updateLCD(){
+    // ####### BATTERY VOLTAGE INDICATOR ######
+    /* Rudimentary Voltage --- Charge state
+    4.2 V --- 100 %
+    4.1 V --- 90 %
+    4.0 V --- 80 %
+    3.9 V --- 60 %
+    3.8 V --- 40 %
+    3.7 V --- 20 %
+    3.6 V --- 0 %
+	from: https://xiaolaba.wordpress.com/2017/06/12/hd44780-lcm-battery-gauge-and-symbol-design/
+	0x00 const byte bat_13[8] = { 0xe, 0x1b, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1f}; 
+	0x01 const byte bat_25[8] = { 0xe, 0x1b, 0x11, 0x11, 0x11, 0x11, 0x1f, 0x1f};
+	0x02 const byte bat_38[8] = { 0xe, 0x1b, 0x11, 0x11, 0x11, 0x1f, 0x1f, 0x1f};
+	0x03 const byte bat_50[8] = { 0xe, 0x1b, 0x11, 0x11, 0x1f, 0x1f, 0x1f, 0x1f};
+	0x04 const byte bat_63[8] = { 0xe, 0x1b, 0x11, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f};
+	0x05 const byte bat_75[8] = { 0xe, 0x1b, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f};
+	0x06 const byte bat_88[8] = { 0xe, 0x11, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f};
+	0x06 const byte bat_100[8] ={ 0xe, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f};
+    */
+
+    LCD_ClearDisplay(&lcd);
+    HAL_Delay(5);
+    LCD_SetLocation(&lcd, 0, 0);
+
+    if(batteryVoltage/(float)BAT_NUMBER_OF_CELLS < BAT_LOW_LVL2){
+        LCD_WriteString(&lcd, "BATTERY EMPTY");
+    } else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > BAT_LOW_LVL2 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= BAT_LOW_LVL1){
+        LCD_WriteDATA(&lcd, 0x00);
+    } else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.6 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 3.7){
+        LCD_WriteDATA(&lcd, 0x01);
+    } else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.7 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 3.8){
+        LCD_WriteDATA(&lcd, 0x02);
+    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.8 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 3.9){
+        LCD_WriteDATA(&lcd, 0x03);
+    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.9 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 3.95){
+        LCD_WriteDATA(&lcd, 0x04);
+    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.95 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 4.0){
+        LCD_WriteDATA(&lcd, 0x05);
+    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 4.0 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 4.1){
+        LCD_WriteDATA(&lcd, 0x06);
+    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 4.1){
+        LCD_WriteDATA(&lcd, 0x07);
+    }
+    LCD_SetLocation(&lcd, 2, 0);
+    LCD_WriteNumber(&lcd, batteryVoltage, 0);
+    LCD_SetLocation(&lcd, 4, 0);
+    LCD_WriteString(&lcd, "V");
+
+    // speed
+    LCD_SetLocation(&lcd, 0, 1);
+    LCD_WriteString(&lcd, "Speed");
+    LCD_SetLocation(&lcd, 8, 1);
+    LCD_WriteNumber(&lcd, lcd_update_counter, 1);
+    LCD_SetLocation(&lcd, 10, 1);
+    LCD_WriteString(&lcd, "km/h");
+}
 
 int main(void) {
   HAL_Init();
@@ -177,57 +277,14 @@ int main(void) {
   #endif
 
   #ifdef DEBUG_I2C_LCD
-    I2C_Init();
-    HAL_Delay(100);
-    lcd.pcf8574.PCF_I2C_ADDRESS = 0x27;
-      lcd.pcf8574.PCF_I2C_TIMEOUT = 5;
-      lcd.pcf8574.i2c = hi2c2;
-      lcd.NUMBER_OF_LINES = NUMBER_OF_LINES_2;
-      lcd.type = TYPE0;
-
-      if(LCD_Init(&lcd)!=LCD_OK){
-          // error occured
-          //TODO while(1);
-      }
-
-    LCD_ClearDisplay(&lcd);
-    HAL_Delay(5);
-    LCD_SetLocation(&lcd, 0, 0);
-    LCD_WriteString(&lcd, "Get Ready!");
-    LCD_SetLocation(&lcd, 0, 1);
-    LCD_WriteString(&lcd, "Waiting to arm");
+    initializeLCD();
   #endif
-
-  // ####### driving modes #######
-
-  // beim einschalten gashebel gedrueckt halten um modus einzustellen:
-  // Mode 1, links:     3 kmh, ohne Turbo
-  // Mode 2, default:   6 kmh, ohne Turbo
-  // Mode 3, rechts:   12 kmh, ohne Turbo
-  // Mode 4, l + r:    22 kmh, 29 kmh mit Turbo
-
-  int16_t start_links  = adc_buffer.l_rx2;  // ADC1, links, rueckwearts
-  int16_t start_rechts = adc_buffer.l_tx2;  // ADC2, rechts, vorwaerts
   int8_t mode;
   HAL_Delay(300);
-  
+  // ####### driving modes #######
   mode = MODE;
   beep(2);
-//  if(start_rechts > (ADC2_MAX - 450) && start_links > (ADC1_MAX - 450)){  // Mode 4
-//    mode = 4;
-//    beep(4);
-//  } else if(start_rechts > (ADC2_MAX - 450)){  // Mode 3
-//    mode = 3;
-//    beep(3);
-// } else if(start_links > (ADC1_MAX - 450)){  // Mode 1
-//    mode = 1;
-//    beep(1);
-//  } else {  // Mode 2
-//    mode = 2;
-//   beep(2);
-//  }
-
-  while(adc_buffer.l_tx2 > (ADC2_MAX - 450) || adc_buffer.l_rx2 > (ADC1_MAX - 450)) HAL_Delay(100); //delay in ms, wait until potis released
+  updateLCD();
 
   float board_temp_adc_filtered = (float)adc_buffer.temp;
   float board_temp_deg_c;
@@ -236,52 +293,6 @@ int main(void) {
 
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP); //delay in ms
-
-    // ####### BATTERY VOLTAGE INDICATOR ######
-    /*Voltage --- Charge state
-    4.2 V --- 100 %
-    4.1 V --- 90 %
-    4.0 V --- 80 %
-    3.9 V --- 60 %
-    3.8 V --- 40 %
-    3.7 V --- 20 %
-    3.6 V --- 0 %
-    voltage = (batteryVoltage * (float)BAT_NUMBER_OF_CELLS)
-    (int)(batteryVoltage * 100.0f))
-    batteryPercent = (batteryVoltage - 3.6)/0.6*100.0f
-
-    */
-    LCD_ClearDisplay(&lcd);
-    LCD_SetLocation(&lcd, 0, 0);
-
-    if(batteryVoltage/(float)BAT_NUMBER_OF_CELLS < BAT_LOW_LVL2){
-        LCD_WriteString(&lcd, "BATTERY EMPTY");
-    } else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > BAT_LOW_LVL2 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= BAT_LOW_LVL1){
-        LCD_WriteString(&lcd, "Battery 0%");
-    } else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.6 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 3.7){
-        LCD_WriteString(&lcd, "Battery 20%");
-    } else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.7 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 3.8){
-        LCD_WriteString(&lcd, "Battery 40%");
-    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.8 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 3.9){
-        LCD_WriteString(&lcd, "Battery 60%");
-    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 3.9 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 4.0){
-        LCD_WriteString(&lcd, "Battery 80%");
-    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 4.0 && batteryVoltage/(float)BAT_NUMBER_OF_CELLS <= 4.1){
-        LCD_WriteString(&lcd, "Battery 90%");
-    }else if (batteryVoltage/(float)BAT_NUMBER_OF_CELLS > 4.2){
-        LCD_WriteString(&lcd, "Battery 100%");
-    }
-    LCD_SetLocation(&lcd, 13, 0);
-    LCD_WriteNumber(&lcd, batteryVoltage, 0);
-    LCD_SetLocation(&lcd, 15, 0);
-    LCD_WriteString(&lcd, "V");
-
-
-    // speed
-    LCD_SetLocation(&lcd, 0, 1);
-    LCD_WriteString(&lcd, "Speed");
-    LCD_SetLocation(&lcd, 8, 1);
-    LCD_WriteNumber(&lcd, abs(speedRL), 1);
 
     #ifdef CONTROL_NUNCHUCK
       Nunchuck_Read();
@@ -312,7 +323,6 @@ int main(void) {
       //#ifdef ADC2_BUTTON
       //  button2 = (uint8_t)(adc_buffer.l_rx2 > 2000);  // ADC2
       //#endif
-
       timeout = 0;
     #endif
 
@@ -330,9 +340,8 @@ int main(void) {
     adc2_filtered = adc2_filtered * 0.9 + (float)adc_buffer.l_tx2 * 0.1; // rechts, vorwaerts
 
     // magic numbers die ich nicht mehr nachvollziehen kann, faehrt sich aber gut ;-)
-    #define LOSLASS_BREMS_ACC 0.996f  // naeher an 1 = gemaechlicher
-    #define DRUECK_ACC1 (1.0f - LOSLASS_BREMS_ACC + 0.001f)  // naeher an 0 = gemaechlicher
-    #define DRUECK_ACC2 (1.0f - LOSLASS_BREMS_ACC + 0.001f)  // naeher an 0 = gemaechlicher
+    #define LOSLASS_BREMS_ACC 0.995f  // naeher an 1 = gemaechlicher, default 0.996f
+    #define DRUECK_ACC (1.0f - LOSLASS_BREMS_ACC + 0.001f)  // naeher an 0 = gemaechlicher
     //die + 0.001f gleichen float ungenauigkeiten aus.
 
     // ADC1 = rx2, throttle, ADC2 = tx2, FWD/REV
@@ -340,28 +349,30 @@ int main(void) {
     #define ADC2_DELTA (ADC2_MAX - ADC2_MIN)
 
     float throttle_input = adc_buffer.l_rx2;
-    float throttle_setpoint = 0; // STOP
     float throttle_param;
 
     float shift_input = adc_buffer.l_tx2;
-    //float shift_setpoint = 0;
-    float shift_setpoint;
-    float shift_param;
+    float shift_setpoint=0.0;
 
-    if (mode == 1) {  // Mode 1, links: 3 kmh
-      shift_param = 280.0f;
+    if (mode == 1) {
       throttle_param = 350.0f;
-    } else if (mode == 2) { // Mode 2, default: 6 kmh
-      shift_param = 310.0f;
-      throttle_param = 420.0f;
-    } else if (mode = 3) { // Mode 3, rechts:  9 kmh
-      shift_param = 340.0f;
+    } else if (mode == 2) {
+      throttle_param = 400.0f;
+    } else if (mode == 3) {
+      throttle_param = 440.0f;
+    } else if (mode == 4) {
+      throttle_param = 480.0f;
+    } else if (mode == 5) {
       throttle_param = 520.0f;
-    } else if (mode = 4) { // Mode 4, rechts: 12 kmh
-      shift_param = 340.0f;
-      throttle_param = 600.0f;
-    } else if (mode = 5) { // Mode 5, l + r: full kmh
-      shift_param = 340.0f;
+    } else if (mode == 6) {
+      throttle_param = 563.0f;
+    } else if (mode == 7) {
+      throttle_param = 617.0f;
+    } else if (mode == 8) {
+      throttle_param = 684.0f;
+    } else if (mode == 9) {
+      throttle_param = 751.0f;
+    } else if (mode == 10) {
       throttle_param = 1000.0f;
     }
 
@@ -370,66 +381,15 @@ int main(void) {
     } else if (shift_input < ADC2_CENTER + 200 && shift_input > ADC2_CENTER - 200) {
         shift_setpoint = 0; // STOP
     } else if (shift_input < ADC2_CENTER - 200) {
-        shift_setpoint = -0.5; // REV
+        shift_setpoint = -0.6; // REV
     }
 
     speedRL = (float)speedRL * LOSLASS_BREMS_ACC  // bremsen wenn kein poti gedrueckt
-            + (CLAMP(throttle_input - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / throttle_param)) * DRUECK_ACC2;  // vorwaerts gedrueckt = beschleunigen 12s: 350=3kmh
+            + (CLAMP(throttle_input - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / throttle_param)) * DRUECK_ACC;  // vorwaerts gedrueckt = beschleunigen 12s: 350=3kmh
 
     weakl = 0;
     weakr = 0;
     speed = speedR = speedL = shift_setpoint*(CLAMP(speedRL, -1000, 1000));  // clamp output
-
-
-    /*
-    if (mode == 1) {  // Mode 1, links: 3 kmh
-      speedRL = (float)speedRL * LOSLASS_BREMS_ACC  // bremsen wenn kein poti gedrueckt
-              - (CLAMP(adc_buffer.l_rx2 - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / 280.0f)) * DRUECK_ACC1  // links gedrueckt = zusatzbremsen oder rueckwaertsfahren
-              + (CLAMP(adc_buffer.l_tx2 - ADC2_MIN, 0, ADC2_DELTA) / (ADC2_DELTA / 350.0f)) * DRUECK_ACC2;  // vorwaerts gedrueckt = beschleunigen 12s: 350=3kmh
-      weakl = 0;
-      weakr = 0;
-
-    } else if (mode == 2) { // Mode 2, default: 6 kmh
-      speedRL = (float)speedRL * LOSLASS_BREMS_ACC
-              - (CLAMP(adc_buffer.l_rx2 - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / 310.0f)) * DRUECK_ACC1
-              + (CLAMP(adc_buffer.l_tx2 - ADC2_MIN, 0, ADC2_DELTA) / (ADC2_DELTA / 420.0f)) * DRUECK_ACC2;  // 12s: 400=5-6kmh 450=7kmh
-      weakl = 0;
-      weakr = 0;
-
-    } else if (mode == 3) { // Mode 3, rechts: 12 kmh
-      speedRL = (float)speedRL * LOSLASS_BREMS_ACC
-              - (CLAMP(adc_buffer.l_rx2 - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / 340.0f)) * DRUECK_ACC1
-              + (CLAMP(adc_buffer.l_tx2 - ADC2_MIN, 0, ADC2_DELTA) / (ADC2_DELTA / 600.0f)) * DRUECK_ACC2;  // 12s: 600=12kmh
-      weakl = 0;
-      weakr = 0;
-
-    } else if (mode == 4) { // Mode 4, l + r: full kmh
-      // Feldschwaechung wird nur aktiviert wenn man schon sehr schnell ist. So gehts: Rechts voll druecken und warten bis man schnell ist, dann zusaetzlich links schnell voll druecken.
-      if (adc1_filtered > (ADC1_MAX - 450) && speedRL > 800) { // field weakening at high speeds
-        speedRL = (float)speedRL * LOSLASS_BREMS_ACC
-              + (CLAMP(adc_buffer.l_tx2 - ADC2_MIN, 0, ADC2_DELTA) / (ADC2_DELTA / 1000.0f)) * DRUECK_ACC2;
-        weak = weak * 0.95 + 400.0 * 0.05;  // sanftes hinzuschalten des turbos, 12s: 400=29kmh
-      } else { //normale fahrt ohne feldschwaechung
-        speedRL = (float)speedRL * LOSLASS_BREMS_ACC
-              - (CLAMP(adc_buffer.l_rx2 - ADC1_MIN, 0, ADC1_DELTA) / (ADC1_DELTA / 340.0f)) * DRUECK_ACC1
-              + (CLAMP(adc_buffer.l_tx2 - ADC2_MIN, 0, ADC2_DELTA) / (ADC2_DELTA / 1000.0f)) * DRUECK_ACC2;  // 12s: 1000=22kmh
-        weak = weak * 0.95;  // sanftes abschalten des turbos
-      }
-      weakr = weakl = (int)weak; // weak should never exceed 400 or 450 MAX!!
-    }
-
-    speed = speedR = speedL = CLAMP(speedRL, -1000, 1000);  // clamp output
-    */
-
-    // ####### LOW-PASS FILTER #######
-    // steer = steer * (1.0 - FILTER) + cmd1 * FILTER;
-    // speed = speed * (1.0 - FILTER) + cmd2 * FILTER;
-
-
-    // ####### MIXER #######
-    // speedR = CLAMP(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT, -1000, 1000);
-    // speedL = CLAMP(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT, -1000, 1000);
-
 
     #ifdef ADDITIONAL_CODE
       ADDITIONAL_CODE;
@@ -479,7 +439,6 @@ int main(void) {
       while (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN)) {}
       poweroff();
     }
-
 
     // ####### BEEP AND EMERGENCY POWEROFF #######
     if ((TEMP_POWEROFF_ENABLE && board_temp_deg_c >= TEMP_POWEROFF && abs(speed) < 20) || (batteryVoltage < ((float)BAT_LOW_DEAD * (float)BAT_NUMBER_OF_CELLS) && abs(speed) < 20)) {  // poweroff before mainboard burns OR low bat 3

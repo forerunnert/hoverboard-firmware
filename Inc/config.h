@@ -78,12 +78,20 @@
 #define ADC2_CENTER 464 // ADC2-value while in center position
 #define ADC2_MAX 3110   // max ADC2-value while poti at maximum-position (0 - 4095)
 
-#define MODE 3          // driving mode:
-                        // Mode 1, 3 kmh, ohne Turbo
-                        // Mode 2, default:   6 kmh, ohne Turbo
-                        // Mode 3, 9 kmh, ohne Turbo
-                        // Mode 4, 12 kmh, ohne Turbo
-                        // Mode 5, 22 kmh, 29 kmh mit Turbo
+#define MODE 2          // driving modes with 280mm tire:
+                        // Mode 1, 5.2 kmh, ohne Turbo
+                        // Mode 2, 9 kmh, ohne Turbo
+                        // Mode 3, 12 kmh, ohne Turbo
+                        // Mode 4, 15 kmh, ohne Turbo
+                        // Mode 5, 18 kmh, ohne Turbo
+                        // Mode 6, 21 kmh, ohne Turbo
+                        // Mode 7, 25 kmh, ohne Turbo
+                        // Mode 8, 30 kmh, ohne Turbo
+                        // Mode 9, 35 kmh, ohne Turbo
+                        // Mode 10, 38 kmh, 50.17 kmh mit Turbo
+                        // standard tire 162mm = 0.51m
+                        // large tire 280mm = 0.88m
+                        // = 1.73 larger
 
 // ###### CONTROL VIA NINTENDO NUNCHUCK ######
 // left sensor board cable. keep cable short, use shielded cable, use ferrits, stabalize voltage in nunchuck, use the right one of the 2 types of nunchucks, add i2c pullups. use original nunchuck. most clones does not work very well.
