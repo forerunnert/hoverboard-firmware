@@ -1,0 +1,210 @@
+ARM GAS  /tmp/cch3Im5s.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 1
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"comms.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.setScopeChannel,"ax",%progbits
+  16              		.align	1
+  17              		.global	setScopeChannel
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu softvfp
+  23              	setScopeChannel:
+  24              	.LFB66:
+  25              		.file 1 "Src/comms.c"
+   1:Src/comms.c   **** #include "stm32f1xx_hal.h"
+   2:Src/comms.c   **** #include "defines.h"
+   3:Src/comms.c   **** #include "setup.h"
+   4:Src/comms.c   **** #include "config.h"
+   5:Src/comms.c   **** #include "stdio.h"
+   6:Src/comms.c   **** #include "string.h"
+   7:Src/comms.c   **** 
+   8:Src/comms.c   **** UART_HandleTypeDef huart2;
+   9:Src/comms.c   **** 
+  10:Src/comms.c   **** #ifdef DEBUG_SERIAL_USART3
+  11:Src/comms.c   **** #define UART_DMA_CHANNEL DMA1_Channel2
+  12:Src/comms.c   **** #endif
+  13:Src/comms.c   **** 
+  14:Src/comms.c   **** #ifdef DEBUG_SERIAL_USART2
+  15:Src/comms.c   **** #define UART_DMA_CHANNEL DMA1_Channel7
+  16:Src/comms.c   **** #endif
+  17:Src/comms.c   **** 
+  18:Src/comms.c   **** 
+  19:Src/comms.c   **** volatile uint8_t uart_buf[100];
+  20:Src/comms.c   **** volatile int16_t ch_buf[8];
+  21:Src/comms.c   **** //volatile char char_buf[300];
+  22:Src/comms.c   **** 
+  23:Src/comms.c   **** void setScopeChannel(uint8_t ch, int16_t val) {
+  26              		.loc 1 23 0
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 0
+  29              		@ frame_needed = 0, uses_anonymous_args = 0
+  30              		@ link register save eliminated.
+  31              	.LVL0:
+  24:Src/comms.c   ****   ch_buf[ch] = val;
+  32              		.loc 1 24 0
+  33 0000 014B     		ldr	r3, .L2
+  34 0002 23F81010 		strh	r1, [r3, r0, lsl #1]	@ movhi
+ARM GAS  /tmp/cch3Im5s.s 			page 2
+
+
+  25:Src/comms.c   **** }
+  35              		.loc 1 25 0
+  36 0006 7047     		bx	lr
+  37              	.L3:
+  38              		.align	2
+  39              	.L2:
+  40 0008 00000000 		.word	ch_buf
+  41              		.cfi_endproc
+  42              	.LFE66:
+  44              		.section	.text.consoleScope,"ax",%progbits
+  45              		.align	1
+  46              		.global	consoleScope
+  47              		.syntax unified
+  48              		.thumb
+  49              		.thumb_func
+  50              		.fpu softvfp
+  52              	consoleScope:
+  53              	.LFB67:
+  26:Src/comms.c   **** 
+  27:Src/comms.c   **** void consoleScope() {
+  54              		.loc 1 27 0
+  55              		.cfi_startproc
+  56              		@ args = 0, pretend = 0, frame = 0
+  57              		@ frame_needed = 0, uses_anonymous_args = 0
+  58              		@ link register save eliminated.
+  28:Src/comms.c   ****   #if defined DEBUG_SERIAL_SERVOTERM && defined DEBUG_SERIAL_USART3
+  29:Src/comms.c   ****     uart_buf[0] = 0xff;
+  30:Src/comms.c   ****     uart_buf[1] = CLAMP(ch_buf[0]+127, 0, 255);
+  31:Src/comms.c   ****     uart_buf[2] = CLAMP(ch_buf[1]+127, 0, 255);
+  32:Src/comms.c   ****     uart_buf[3] = CLAMP(ch_buf[2]+127, 0, 255);
+  33:Src/comms.c   ****     uart_buf[4] = CLAMP(ch_buf[3]+127, 0, 255);
+  34:Src/comms.c   ****     uart_buf[5] = CLAMP(ch_buf[4]+127, 0, 255);
+  35:Src/comms.c   ****     uart_buf[6] = CLAMP(ch_buf[5]+127, 0, 255);
+  36:Src/comms.c   ****     uart_buf[7] = CLAMP(ch_buf[6]+127, 0, 255);
+  37:Src/comms.c   ****     uart_buf[8] = CLAMP(ch_buf[7]+127, 0, 255);
+  38:Src/comms.c   ****     uart_buf[9] = '\n';
+  39:Src/comms.c   **** 
+  40:Src/comms.c   ****     if(UART_DMA_CHANNEL->CNDTR == 0) {
+  41:Src/comms.c   ****       UART_DMA_CHANNEL->CCR &= ~DMA_CCR_EN;
+  42:Src/comms.c   ****       UART_DMA_CHANNEL->CNDTR = 10;
+  43:Src/comms.c   ****       UART_DMA_CHANNEL->CMAR  = (uint32_t)uart_buf;
+  44:Src/comms.c   ****       UART_DMA_CHANNEL->CCR |= DMA_CCR_EN;
+  45:Src/comms.c   ****     }
+  46:Src/comms.c   ****   #endif
+  47:Src/comms.c   **** 
+  48:Src/comms.c   ****   #if defined DEBUG_SERIAL_ASCII && defined DEBUG_SERIAL_USART3
+  49:Src/comms.c   ****     memset(uart_buf, 0, sizeof(uart_buf));
+  50:Src/comms.c   ****     sprintf(uart_buf, "1:%i 2:%i 3:%i 4:%i 5:%i 6:%i 7:%i 8:%i\r\n", ch_buf[0], ch_buf[1], ch_buf[2
+  51:Src/comms.c   **** 
+  52:Src/comms.c   ****     if(UART_DMA_CHANNEL->CNDTR == 0) {
+  53:Src/comms.c   ****       UART_DMA_CHANNEL->CCR &= ~DMA_CCR_EN;
+  54:Src/comms.c   ****       UART_DMA_CHANNEL->CNDTR = strlen(uart_buf);
+  55:Src/comms.c   ****       UART_DMA_CHANNEL->CMAR  = (uint32_t)uart_buf;
+  56:Src/comms.c   ****       UART_DMA_CHANNEL->CCR |= DMA_CCR_EN;
+  57:Src/comms.c   ****     }
+  58:Src/comms.c   ****   #endif
+  59:Src/comms.c   **** }
+ARM GAS  /tmp/cch3Im5s.s 			page 3
+
+
+  59              		.loc 1 59 0
+  60 0000 7047     		bx	lr
+  61              		.cfi_endproc
+  62              	.LFE67:
+  64              		.section	.text.consoleLog,"ax",%progbits
+  65              		.align	1
+  66              		.global	consoleLog
+  67              		.syntax unified
+  68              		.thumb
+  69              		.thumb_func
+  70              		.fpu softvfp
+  72              	consoleLog:
+  73              	.LFB68:
+  60:Src/comms.c   **** 
+  61:Src/comms.c   **** void consoleLog(char *message)
+  62:Src/comms.c   **** {
+  74              		.loc 1 62 0
+  75              		.cfi_startproc
+  76              		@ args = 0, pretend = 0, frame = 0
+  77              		@ frame_needed = 0, uses_anonymous_args = 0
+  78              	.LVL1:
+  79 0000 10B5     		push	{r4, lr}
+  80              	.LCFI0:
+  81              		.cfi_def_cfa_offset 8
+  82              		.cfi_offset 4, -8
+  83              		.cfi_offset 14, -4
+  84 0002 0446     		mov	r4, r0
+  63:Src/comms.c   ****     HAL_UART_Transmit_DMA(&huart2, (uint8_t *)message, strlen(message));
+  85              		.loc 1 63 0
+  86 0004 FFF7FEFF 		bl	strlen
+  87              	.LVL2:
+  88 0008 82B2     		uxth	r2, r0
+  89 000a 2146     		mov	r1, r4
+  90 000c 0148     		ldr	r0, .L7
+  91 000e FFF7FEFF 		bl	HAL_UART_Transmit_DMA
+  92              	.LVL3:
+  64:Src/comms.c   **** }
+  93              		.loc 1 64 0
+  94 0012 10BD     		pop	{r4, pc}
+  95              	.LVL4:
+  96              	.L8:
+  97              		.align	2
+  98              	.L7:
+  99 0014 00000000 		.word	huart2
+ 100              		.cfi_endproc
+ 101              	.LFE68:
+ 103              		.comm	ch_buf,16,4
+ 104              		.comm	uart_buf,100,4
+ 105              		.comm	huart2,64,4
+ 106              		.text
+ 107              	.Letext0:
+ 108              		.file 2 "/usr/arm-none-eabi/include/machine/_default_types.h"
+ 109              		.file 3 "/usr/arm-none-eabi/include/sys/_stdint.h"
+ 110              		.file 4 "Drivers/CMSIS/Include/core_cm3.h"
+ 111              		.file 5 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h"
+ 112              		.file 6 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h"
+ 113              		.file 7 "/usr/arm-none-eabi/include/sys/lock.h"
+ARM GAS  /tmp/cch3Im5s.s 			page 4
+
+
+ 114              		.file 8 "/usr/arm-none-eabi/include/sys/_types.h"
+ 115              		.file 9 "/usr/lib/gcc/arm-none-eabi/7.3.1/include/stddef.h"
+ 116              		.file 10 "/usr/arm-none-eabi/include/sys/reent.h"
+ 117              		.file 11 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 118              		.file 12 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 119              		.file 13 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h"
+ 120              		.file 14 "/usr/arm-none-eabi/include/string.h"
+ARM GAS  /tmp/cch3Im5s.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 comms.c
+     /tmp/cch3Im5s.s:16     .text.setScopeChannel:0000000000000000 $t
+     /tmp/cch3Im5s.s:23     .text.setScopeChannel:0000000000000000 setScopeChannel
+     /tmp/cch3Im5s.s:40     .text.setScopeChannel:0000000000000008 $d
+                            *COM*:0000000000000010 ch_buf
+     /tmp/cch3Im5s.s:45     .text.consoleScope:0000000000000000 $t
+     /tmp/cch3Im5s.s:52     .text.consoleScope:0000000000000000 consoleScope
+     /tmp/cch3Im5s.s:65     .text.consoleLog:0000000000000000 $t
+     /tmp/cch3Im5s.s:72     .text.consoleLog:0000000000000000 consoleLog
+     /tmp/cch3Im5s.s:99     .text.consoleLog:0000000000000014 $d
+                            *COM*:0000000000000040 huart2
+                            *COM*:0000000000000064 uart_buf
+
+UNDEFINED SYMBOLS
+strlen
+HAL_UART_Transmit_DMA

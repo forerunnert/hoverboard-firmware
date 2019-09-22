@@ -1,0 +1,1122 @@
+ARM GAS  /tmp/ccSCBC5z.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 1
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"i2c.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.MX_I2C2_Init,"ax",%progbits
+  16              		.align	1
+  17              		.global	MX_I2C2_Init
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu softvfp
+  23              	MX_I2C2_Init:
+  24              	.LFB66:
+  25              		.file 1 "Src/i2c.c"
+   1:Src/i2c.c     **** #include "i2c.h"
+   2:Src/i2c.c     **** #include "stm32f1xx_hal.h"
+   3:Src/i2c.c     **** 
+   4:Src/i2c.c     **** I2C_HandleTypeDef hi2c2;
+   5:Src/i2c.c     **** DMA_HandleTypeDef hdma_i2c2_rx;
+   6:Src/i2c.c     **** DMA_HandleTypeDef hdma_i2c2_tx;
+   7:Src/i2c.c     **** 
+   8:Src/i2c.c     **** volatile __IO struct WII_JOYdati wii_JOYdati;
+   9:Src/i2c.c     **** 
+  10:Src/i2c.c     **** /* I2C2 init function */
+  11:Src/i2c.c     **** void MX_I2C2_Init(void)
+  12:Src/i2c.c     **** {
+  26              		.loc 1 12 0
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 8
+  29              		@ frame_needed = 0, uses_anonymous_args = 0
+  30 0000 00B5     		push	{lr}
+  31              	.LCFI0:
+  32              		.cfi_def_cfa_offset 4
+  33              		.cfi_offset 14, -4
+  34 0002 83B0     		sub	sp, sp, #12
+  35              	.LCFI1:
+  36              		.cfi_def_cfa_offset 16
+  37              	.LBB2:
+  13:Src/i2c.c     ****   __HAL_RCC_I2C2_CLK_ENABLE();
+  38              		.loc 1 13 0
+  39 0004 224B     		ldr	r3, .L5
+  40 0006 DA69     		ldr	r2, [r3, #28]
+  41 0008 42F48002 		orr	r2, r2, #4194304
+  42 000c DA61     		str	r2, [r3, #28]
+  43 000e DA69     		ldr	r2, [r3, #28]
+  44 0010 02F48002 		and	r2, r2, #4194304
+  45 0014 0092     		str	r2, [sp]
+ARM GAS  /tmp/ccSCBC5z.s 			page 2
+
+
+  46 0016 009A     		ldr	r2, [sp]
+  47              	.LBE2:
+  48              	.LBB3:
+  14:Src/i2c.c     ****   __HAL_RCC_DMA1_CLK_ENABLE();
+  49              		.loc 1 14 0
+  50 0018 5A69     		ldr	r2, [r3, #20]
+  51 001a 42F00102 		orr	r2, r2, #1
+  52 001e 5A61     		str	r2, [r3, #20]
+  53 0020 5B69     		ldr	r3, [r3, #20]
+  54 0022 03F00103 		and	r3, r3, #1
+  55 0026 0193     		str	r3, [sp, #4]
+  56 0028 019B     		ldr	r3, [sp, #4]
+  57              	.LBE3:
+  15:Src/i2c.c     **** 
+  16:Src/i2c.c     **** 
+  17:Src/i2c.c     ****   /* DMA1_Channel4_IRQn interrupt configuration */
+  18:Src/i2c.c     ****   HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 1, 4);
+  58              		.loc 1 18 0
+  59 002a 0422     		movs	r2, #4
+  60 002c 0121     		movs	r1, #1
+  61 002e 0E20     		movs	r0, #14
+  62 0030 FFF7FEFF 		bl	HAL_NVIC_SetPriority
+  63              	.LVL0:
+  19:Src/i2c.c     ****   HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+  64              		.loc 1 19 0
+  65 0034 0E20     		movs	r0, #14
+  66 0036 FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+  67              	.LVL1:
+  20:Src/i2c.c     ****   /* DMA1_Channel5_IRQn interrupt configuration */
+  21:Src/i2c.c     ****   HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 1, 3);
+  68              		.loc 1 21 0
+  69 003a 0322     		movs	r2, #3
+  70 003c 0121     		movs	r1, #1
+  71 003e 0F20     		movs	r0, #15
+  72 0040 FFF7FEFF 		bl	HAL_NVIC_SetPriority
+  73              	.LVL2:
+  22:Src/i2c.c     ****   HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+  74              		.loc 1 22 0
+  75 0044 0F20     		movs	r0, #15
+  76 0046 FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+  77              	.LVL3:
+  23:Src/i2c.c     **** 
+  24:Src/i2c.c     ****   hi2c2.Instance = I2C2;
+  78              		.loc 1 24 0
+  79 004a 1248     		ldr	r0, .L5+4
+  80 004c 124B     		ldr	r3, .L5+8
+  81 004e 0360     		str	r3, [r0]
+  25:Src/i2c.c     ****   hi2c2.Init.ClockSpeed = 40000;
+  82              		.loc 1 25 0
+  83 0050 49F64043 		movw	r3, #40000
+  84 0054 4360     		str	r3, [r0, #4]
+  26:Src/i2c.c     ****   hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  85              		.loc 1 26 0
+  86 0056 0023     		movs	r3, #0
+  87 0058 8360     		str	r3, [r0, #8]
+  27:Src/i2c.c     ****   hi2c2.Init.OwnAddress1 = 0;
+  88              		.loc 1 27 0
+ARM GAS  /tmp/ccSCBC5z.s 			page 3
+
+
+  89 005a C360     		str	r3, [r0, #12]
+  28:Src/i2c.c     ****   hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  90              		.loc 1 28 0
+  91 005c 4FF48042 		mov	r2, #16384
+  92 0060 0261     		str	r2, [r0, #16]
+  29:Src/i2c.c     ****   hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  93              		.loc 1 29 0
+  94 0062 4361     		str	r3, [r0, #20]
+  30:Src/i2c.c     ****   hi2c2.Init.OwnAddress2 = 0;
+  95              		.loc 1 30 0
+  96 0064 8361     		str	r3, [r0, #24]
+  31:Src/i2c.c     ****   hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  97              		.loc 1 31 0
+  98 0066 C361     		str	r3, [r0, #28]
+  32:Src/i2c.c     ****   hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  99              		.loc 1 32 0
+ 100 0068 0362     		str	r3, [r0, #32]
+  33:Src/i2c.c     ****   if (HAL_I2C_Init(&hi2c2) != HAL_OK)
+ 101              		.loc 1 33 0
+ 102 006a FFF7FEFF 		bl	HAL_I2C_Init
+ 103              	.LVL4:
+ 104 006e 58B9     		cbnz	r0, .L4
+ 105              	.L2:
+  34:Src/i2c.c     ****   {
+  35:Src/i2c.c     ****     Error_Handler();
+  36:Src/i2c.c     ****   }
+  37:Src/i2c.c     ****   wii_JOYdati.I2CTxDone = 0;
+ 106              		.loc 1 37 0
+ 107 0070 0A4B     		ldr	r3, .L5+12
+ 108 0072 0022     		movs	r2, #0
+ 109 0074 1A73     		strb	r2, [r3, #12]
+  38:Src/i2c.c     ****   wii_JOYdati.I2CRxDone = 0;
+ 110              		.loc 1 38 0
+ 111 0076 5A73     		strb	r2, [r3, #13]
+  39:Src/i2c.c     ****   wii_JOYdati.I2CERROR = 0;
+ 112              		.loc 1 39 0
+ 113 0078 9A73     		strb	r2, [r3, #14]
+  40:Src/i2c.c     ****   wii_JOYdati.stato = 0;
+ 114              		.loc 1 40 0
+ 115 007a DA73     		strb	r2, [r3, #15]
+  41:Src/i2c.c     **** 
+  42:Src/i2c.c     ****   HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+ 116              		.loc 1 42 0
+ 117 007c 1F20     		movs	r0, #31
+ 118 007e FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+ 119              	.LVL5:
+  43:Src/i2c.c     **** 
+  44:Src/i2c.c     ****   //WiiNunchuck_INIT();
+  45:Src/i2c.c     **** }
+ 120              		.loc 1 45 0
+ 121 0082 03B0     		add	sp, sp, #12
+ 122              	.LCFI2:
+ 123              		.cfi_remember_state
+ 124              		.cfi_def_cfa_offset 4
+ 125              		@ sp needed
+ 126 0084 5DF804FB 		ldr	pc, [sp], #4
+ 127              	.L4:
+ARM GAS  /tmp/ccSCBC5z.s 			page 4
+
+
+ 128              	.LCFI3:
+ 129              		.cfi_restore_state
+  35:Src/i2c.c     ****   }
+ 130              		.loc 1 35 0
+ 131 0088 FFF7FEFF 		bl	Error_Handler
+ 132              	.LVL6:
+ 133 008c F0E7     		b	.L2
+ 134              	.L6:
+ 135 008e 00BF     		.align	2
+ 136              	.L5:
+ 137 0090 00100240 		.word	1073876992
+ 138 0094 00000000 		.word	hi2c2
+ 139 0098 00580040 		.word	1073764352
+ 140 009c 00000000 		.word	wii_JOYdati
+ 141              		.cfi_endproc
+ 142              	.LFE66:
+ 144              		.section	.text.WiiNunchuck_INIT,"ax",%progbits
+ 145              		.align	1
+ 146              		.global	WiiNunchuck_INIT
+ 147              		.syntax unified
+ 148              		.thumb
+ 149              		.thumb_func
+ 150              		.fpu softvfp
+ 152              	WiiNunchuck_INIT:
+ 153              	.LFB67:
+  46:Src/i2c.c     **** 
+  47:Src/i2c.c     **** 
+  48:Src/i2c.c     **** 
+  49:Src/i2c.c     **** void WiiNunchuck_INIT(void){
+ 154              		.loc 1 49 0
+ 155              		.cfi_startproc
+ 156              		@ args = 0, pretend = 0, frame = 8
+ 157              		@ frame_needed = 0, uses_anonymous_args = 0
+ 158 0000 30B5     		push	{r4, r5, lr}
+ 159              	.LCFI4:
+ 160              		.cfi_def_cfa_offset 12
+ 161              		.cfi_offset 4, -12
+ 162              		.cfi_offset 5, -8
+ 163              		.cfi_offset 14, -4
+ 164 0002 83B0     		sub	sp, sp, #12
+ 165              	.LCFI5:
+ 166              		.cfi_def_cfa_offset 24
+  50:Src/i2c.c     ****     uint8_t ai2cBuffer[2];
+  51:Src/i2c.c     **** 
+  52:Src/i2c.c     ****     //-- START -- init WiiNunchuck
+  53:Src/i2c.c     ****     ai2cBuffer[0] = 0xF0;
+  54:Src/i2c.c     ****     ai2cBuffer[1] = 0x55;
+  55:Src/i2c.c     ****     //Originale
+  56:Src/i2c.c     ****     ai2cBuffer[0] = 0x40;
+ 167              		.loc 1 56 0
+ 168 0004 4023     		movs	r3, #64
+ 169 0006 8DF80430 		strb	r3, [sp, #4]
+  57:Src/i2c.c     ****     ai2cBuffer[1] = 0x00;
+ 170              		.loc 1 57 0
+ 171 000a 0023     		movs	r3, #0
+ 172 000c 8DF80530 		strb	r3, [sp, #5]
+  58:Src/i2c.c     ****     HAL_I2C_Master_Transmit_DMA(&hi2c2, 0xA4, (uint8_t*)ai2cBuffer, 2);
+ARM GAS  /tmp/ccSCBC5z.s 			page 5
+
+
+ 173              		.loc 1 58 0
+ 174 0010 0223     		movs	r3, #2
+ 175 0012 01AA     		add	r2, sp, #4
+ 176 0014 A421     		movs	r1, #164
+ 177 0016 0848     		ldr	r0, .L10
+ 178 0018 FFF7FEFF 		bl	HAL_I2C_Master_Transmit_DMA
+ 179              	.LVL7:
+ 180              	.L8:
+  59:Src/i2c.c     ****     while(wii_JOYdati.I2CTxDone ==0);
+ 181              		.loc 1 59 0 discriminator 1
+ 182 001c 074B     		ldr	r3, .L10+4
+ 183 001e 1B7B     		ldrb	r3, [r3, #12]	@ zero_extendqisi2
+ 184 0020 002B     		cmp	r3, #0
+ 185 0022 FBD0     		beq	.L8
+  60:Src/i2c.c     ****     wii_JOYdati.I2CTxDone = 0;
+ 186              		.loc 1 60 0
+ 187 0024 054C     		ldr	r4, .L10+4
+ 188 0026 0025     		movs	r5, #0
+ 189 0028 2573     		strb	r5, [r4, #12]
+  61:Src/i2c.c     ****     HAL_Delay(10);
+ 190              		.loc 1 61 0
+ 191 002a 0A20     		movs	r0, #10
+ 192 002c FFF7FEFF 		bl	HAL_Delay
+ 193              	.LVL8:
+  62:Src/i2c.c     ****     wii_JOYdati.done = 0;
+ 194              		.loc 1 62 0
+ 195 0030 2571     		strb	r5, [r4, #4]
+  63:Src/i2c.c     **** }
+ 196              		.loc 1 63 0
+ 197 0032 03B0     		add	sp, sp, #12
+ 198              	.LCFI6:
+ 199              		.cfi_def_cfa_offset 12
+ 200              		@ sp needed
+ 201 0034 30BD     		pop	{r4, r5, pc}
+ 202              	.L11:
+ 203 0036 00BF     		.align	2
+ 204              	.L10:
+ 205 0038 00000000 		.word	hi2c2
+ 206 003c 00000000 		.word	wii_JOYdati
+ 207              		.cfi_endproc
+ 208              	.LFE67:
+ 210              		.section	.text.nunchuk_decode_byte,"ax",%progbits
+ 211              		.align	1
+ 212              		.global	nunchuk_decode_byte
+ 213              		.syntax unified
+ 214              		.thumb
+ 215              		.thumb_func
+ 216              		.fpu softvfp
+ 218              	nunchuk_decode_byte:
+ 219              	.LFB69:
+  64:Src/i2c.c     **** 
+  65:Src/i2c.c     **** 
+  66:Src/i2c.c     **** void WiiNunchuck_TASK(void){
+  67:Src/i2c.c     ****   uint8_t ai2cBuffer[7];
+  68:Src/i2c.c     ****   uint8_t temp;
+  69:Src/i2c.c     **** 
+  70:Src/i2c.c     ****   switch(wii_JOYdati.stato){
+ARM GAS  /tmp/ccSCBC5z.s 			page 6
+
+
+  71:Src/i2c.c     ****     case 0:
+  72:Src/i2c.c     ****       wii_JOYdati.I2CTxDone = 0;
+  73:Src/i2c.c     ****       ai2cBuffer[0] = 0x00;
+  74:Src/i2c.c     ****       HAL_I2C_Master_Transmit_DMA(&hi2c2, 0xA4, (uint8_t*)ai2cBuffer, 1);
+  75:Src/i2c.c     ****       wii_JOYdati.stato = 12;
+  76:Src/i2c.c     ****       wii_JOYdati.mS = HAL_GetTick();
+  77:Src/i2c.c     ****     break;
+  78:Src/i2c.c     **** 
+  79:Src/i2c.c     ****     case 1:
+  80:Src/i2c.c     ****       if((HAL_GetTick() - wii_JOYdati.mS) >= 7){
+  81:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+  82:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+  83:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+  84:Src/i2c.c     ****         wii_JOYdati.stato = 10;
+  85:Src/i2c.c     ****       }
+  86:Src/i2c.c     ****       if(wii_JOYdati.I2CTxDone){
+  87:Src/i2c.c     ****         wii_JOYdati.stato = 2;
+  88:Src/i2c.c     ****         wii_JOYdati.mS = HAL_GetTick();
+  89:Src/i2c.c     ****       }
+  90:Src/i2c.c     ****       if(wii_JOYdati.I2CERROR){
+  91:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+  92:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+  93:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+  94:Src/i2c.c     ****         wii_JOYdati.stato = 10;
+  95:Src/i2c.c     ****         wii_JOYdati.ay = 127;
+  96:Src/i2c.c     ****         wii_JOYdati.ax = 127;
+  97:Src/i2c.c     ****       }
+  98:Src/i2c.c     ****     break;
+  99:Src/i2c.c     **** 
+ 100:Src/i2c.c     ****     case 2:
+ 101:Src/i2c.c     ****       if((HAL_GetTick() - wii_JOYdati.mS) > 1){
+ 102:Src/i2c.c     ****         wii_JOYdati.stato = 3;
+ 103:Src/i2c.c     ****       }
+ 104:Src/i2c.c     ****     break;
+ 105:Src/i2c.c     **** 
+ 106:Src/i2c.c     ****     case 3:
+ 107:Src/i2c.c     ****       wii_JOYdati.I2CTxDone = 0;
+ 108:Src/i2c.c     ****       wii_JOYdati.I2CRxDone = 0;
+ 109:Src/i2c.c     ****       wii_JOYdati.I2CERROR = 0;
+ 110:Src/i2c.c     ****       HAL_I2C_Master_Receive_DMA(&hi2c2, 0xA5, (uint8_t*)wii_JOYdati.ai2cBuffer, 6);
+ 111:Src/i2c.c     ****       wii_JOYdati.stato = 4;
+ 112:Src/i2c.c     ****       wii_JOYdati.mS = HAL_GetTick();
+ 113:Src/i2c.c     ****     break;
+ 114:Src/i2c.c     **** 
+ 115:Src/i2c.c     ****     case 4:
+ 116:Src/i2c.c     ****       if((HAL_GetTick() - wii_JOYdati.mS) > 50){
+ 117:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 118:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 119:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ 120:Src/i2c.c     ****         wii_JOYdati.stato = 10;
+ 121:Src/i2c.c     ****         wii_JOYdati.ay = 127;
+ 122:Src/i2c.c     ****         wii_JOYdati.ax = 127;
+ 123:Src/i2c.c     ****       }
+ 124:Src/i2c.c     ****       if(wii_JOYdati.I2CERROR){
+ 125:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 126:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 127:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ARM GAS  /tmp/ccSCBC5z.s 			page 7
+
+
+ 128:Src/i2c.c     ****         wii_JOYdati.stato = 10;
+ 129:Src/i2c.c     ****         wii_JOYdati.ay = 127;
+ 130:Src/i2c.c     ****         wii_JOYdati.ax = 127;
+ 131:Src/i2c.c     ****       }
+ 132:Src/i2c.c     ****       if(wii_JOYdati.I2CRxDone){
+ 133:Src/i2c.c     ****         HAL_NVIC_DisableIRQ(DMA1_Channel5_IRQn);
+ 134:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 135:Src/i2c.c     ****         //Copia dati
+ 136:Src/i2c.c     ****         wii_JOYdati.ay = nunchuk_decode_byte(wii_JOYdati.ai2cBuffer[1]);
+ 137:Src/i2c.c     ****         wii_JOYdati.ax = nunchuk_decode_byte(wii_JOYdati.ai2cBuffer[0]);
+ 138:Src/i2c.c     ****         temp = nunchuk_decode_byte(wii_JOYdati.ai2cBuffer[5]);
+ 139:Src/i2c.c     **** 
+ 140:Src/i2c.c     ****         wii_JOYdati.bc = temp & 0x02;
+ 141:Src/i2c.c     ****         wii_JOYdati.bc = wii_JOYdati.bc >> 1;
+ 142:Src/i2c.c     ****         wii_JOYdati.bc = wii_JOYdati.bc & 0x01;
+ 143:Src/i2c.c     ****         wii_JOYdati.bz = temp & 0x01;
+ 144:Src/i2c.c     ****         wii_JOYdati.done = 1;
+ 145:Src/i2c.c     **** 
+ 146:Src/i2c.c     ****         HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+ 147:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 148:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 149:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ 150:Src/i2c.c     **** 
+ 151:Src/i2c.c     ****         wii_JOYdati.mS = HAL_GetTick();
+ 152:Src/i2c.c     ****         wii_JOYdati.stato = 11;
+ 153:Src/i2c.c     ****       }
+ 154:Src/i2c.c     ****     break;
+ 155:Src/i2c.c     **** 
+ 156:Src/i2c.c     ****     case 10:
+ 157:Src/i2c.c     ****       wii_JOYdati.I2CTxDone = 0;
+ 158:Src/i2c.c     ****       wii_JOYdati.I2CRxDone = 0;
+ 159:Src/i2c.c     ****       wii_JOYdati.I2CERROR = 0;
+ 160:Src/i2c.c     ****       wii_JOYdati.stato = 11;
+ 161:Src/i2c.c     ****       wii_JOYdati.mS = HAL_GetTick();
+ 162:Src/i2c.c     ****     break;
+ 163:Src/i2c.c     **** 
+ 164:Src/i2c.c     ****     case 11:
+ 165:Src/i2c.c     ****       if((HAL_GetTick() - wii_JOYdati.mS) >= 1){
+ 166:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 167:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 168:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ 169:Src/i2c.c     ****         wii_JOYdati.stato = 0;
+ 170:Src/i2c.c     ****       }
+ 171:Src/i2c.c     ****     break;
+ 172:Src/i2c.c     **** 
+ 173:Src/i2c.c     ****     case 12:
+ 174:Src/i2c.c     ****       if(HAL_I2C_GetState(&hi2c2) == HAL_I2C_STATE_READY){
+ 175:Src/i2c.c     ****         wii_JOYdati.stato = 1;
+ 176:Src/i2c.c     ****         wii_JOYdati.mS = HAL_GetTick();
+ 177:Src/i2c.c     ****       }
+ 178:Src/i2c.c     ****       if((HAL_GetTick() - wii_JOYdati.mS) >= 7){
+ 179:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 180:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 181:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ 182:Src/i2c.c     ****         wii_JOYdati.stato = 11;
+ 183:Src/i2c.c     ****         wii_JOYdati.mS = HAL_GetTick();
+ 184:Src/i2c.c     ****       }
+ARM GAS  /tmp/ccSCBC5z.s 			page 8
+
+
+ 185:Src/i2c.c     ****     break;
+ 186:Src/i2c.c     **** 
+ 187:Src/i2c.c     ****   }
+ 188:Src/i2c.c     **** }
+ 189:Src/i2c.c     **** 
+ 190:Src/i2c.c     **** 
+ 191:Src/i2c.c     **** 
+ 192:Src/i2c.c     **** 
+ 193:Src/i2c.c     **** 
+ 194:Src/i2c.c     **** 
+ 195:Src/i2c.c     **** 
+ 196:Src/i2c.c     **** uint8_t nunchuk_decode_byte (uint8_t x)
+ 197:Src/i2c.c     **** {
+ 220              		.loc 1 197 0
+ 221              		.cfi_startproc
+ 222              		@ args = 0, pretend = 0, frame = 0
+ 223              		@ frame_needed = 0, uses_anonymous_args = 0
+ 224              		@ link register save eliminated.
+ 225              	.LVL9:
+ 198:Src/i2c.c     ****     x = (x ^ 0x17) + 0x17;
+ 226              		.loc 1 198 0
+ 227 0000 80F01700 		eor	r0, r0, #23
+ 228              	.LVL10:
+ 229 0004 1730     		adds	r0, r0, #23
+ 230              	.LVL11:
+ 199:Src/i2c.c     ****     return x;
+ 200:Src/i2c.c     **** }
+ 231              		.loc 1 200 0
+ 232 0006 C0B2     		uxtb	r0, r0
+ 233 0008 7047     		bx	lr
+ 234              		.cfi_endproc
+ 235              	.LFE69:
+ 237              		.section	.text.WiiNunchuck_TASK,"ax",%progbits
+ 238              		.align	1
+ 239              		.global	WiiNunchuck_TASK
+ 240              		.syntax unified
+ 241              		.thumb
+ 242              		.thumb_func
+ 243              		.fpu softvfp
+ 245              	WiiNunchuck_TASK:
+ 246              	.LFB68:
+  66:Src/i2c.c     ****   uint8_t ai2cBuffer[7];
+ 247              		.loc 1 66 0
+ 248              		.cfi_startproc
+ 249              		@ args = 0, pretend = 0, frame = 8
+ 250              		@ frame_needed = 0, uses_anonymous_args = 0
+ 251 0000 30B5     		push	{r4, r5, lr}
+ 252              	.LCFI7:
+ 253              		.cfi_def_cfa_offset 12
+ 254              		.cfi_offset 4, -12
+ 255              		.cfi_offset 5, -8
+ 256              		.cfi_offset 14, -4
+ 257 0002 83B0     		sub	sp, sp, #12
+ 258              	.LCFI8:
+ 259              		.cfi_def_cfa_offset 24
+  70:Src/i2c.c     ****     case 0:
+ 260              		.loc 1 70 0
+ARM GAS  /tmp/ccSCBC5z.s 			page 9
+
+
+ 261 0004 744B     		ldr	r3, .L32
+ 262 0006 DB7B     		ldrb	r3, [r3, #15]	@ zero_extendqisi2
+ 263 0008 DBB2     		uxtb	r3, r3
+ 264 000a 0C2B     		cmp	r3, #12
+ 265 000c 18D8     		bhi	.L13
+ 266 000e DFE803F0 		tbb	[pc, r3]
+ 267              	.L16:
+ 268 0012 07       		.byte	(.L15-.L16)/2
+ 269 0013 19       		.byte	(.L17-.L16)/2
+ 270 0014 40       		.byte	(.L18-.L16)/2
+ 271 0015 4B       		.byte	(.L19-.L16)/2
+ 272 0016 5C       		.byte	(.L20-.L16)/2
+ 273 0017 17       		.byte	(.L13-.L16)/2
+ 274 0018 17       		.byte	(.L13-.L16)/2
+ 275 0019 17       		.byte	(.L13-.L16)/2
+ 276 001a 17       		.byte	(.L13-.L16)/2
+ 277 001b 17       		.byte	(.L13-.L16)/2
+ 278 001c AA       		.byte	(.L21-.L16)/2
+ 279 001d B5       		.byte	(.L22-.L16)/2
+ 280 001e C3       		.byte	(.L23-.L16)/2
+ 281 001f 00       		.p2align 1
+ 282              	.L15:
+  72:Src/i2c.c     ****       ai2cBuffer[0] = 0x00;
+ 283              		.loc 1 72 0
+ 284 0020 6D4C     		ldr	r4, .L32
+ 285 0022 0023     		movs	r3, #0
+ 286 0024 2373     		strb	r3, [r4, #12]
+  73:Src/i2c.c     ****       HAL_I2C_Master_Transmit_DMA(&hi2c2, 0xA4, (uint8_t*)ai2cBuffer, 1);
+ 287              		.loc 1 73 0
+ 288 0026 02AA     		add	r2, sp, #8
+ 289 0028 02F8083D 		strb	r3, [r2, #-8]!
+  74:Src/i2c.c     ****       wii_JOYdati.stato = 12;
+ 290              		.loc 1 74 0
+ 291 002c 0123     		movs	r3, #1
+ 292 002e A421     		movs	r1, #164
+ 293 0030 6A48     		ldr	r0, .L32+4
+ 294 0032 FFF7FEFF 		bl	HAL_I2C_Master_Transmit_DMA
+ 295              	.LVL12:
+  75:Src/i2c.c     ****       wii_JOYdati.mS = HAL_GetTick();
+ 296              		.loc 1 75 0
+ 297 0036 0C23     		movs	r3, #12
+ 298 0038 E373     		strb	r3, [r4, #15]
+  76:Src/i2c.c     ****     break;
+ 299              		.loc 1 76 0
+ 300 003a FFF7FEFF 		bl	HAL_GetTick
+ 301              	.LVL13:
+ 302 003e 2061     		str	r0, [r4, #16]
+ 303              	.L13:
+ 188:Src/i2c.c     **** 
+ 304              		.loc 1 188 0
+ 305 0040 03B0     		add	sp, sp, #12
+ 306              	.LCFI9:
+ 307              		.cfi_remember_state
+ 308              		.cfi_def_cfa_offset 12
+ 309              		@ sp needed
+ 310 0042 30BD     		pop	{r4, r5, pc}
+ 311              	.L17:
+ARM GAS  /tmp/ccSCBC5z.s 			page 10
+
+
+ 312              	.LCFI10:
+ 313              		.cfi_restore_state
+  80:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 314              		.loc 1 80 0
+ 315 0044 FFF7FEFF 		bl	HAL_GetTick
+ 316              	.LVL14:
+ 317 0048 634B     		ldr	r3, .L32
+ 318 004a 1B69     		ldr	r3, [r3, #16]
+ 319 004c C01A     		subs	r0, r0, r3
+ 320 004e 0628     		cmp	r0, #6
+ 321 0050 06D9     		bls	.L24
+  81:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 322              		.loc 1 81 0
+ 323 0052 614B     		ldr	r3, .L32
+ 324 0054 0022     		movs	r2, #0
+ 325 0056 1A73     		strb	r2, [r3, #12]
+  82:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ 326              		.loc 1 82 0
+ 327 0058 5A73     		strb	r2, [r3, #13]
+  83:Src/i2c.c     ****         wii_JOYdati.stato = 10;
+ 328              		.loc 1 83 0
+ 329 005a 9A73     		strb	r2, [r3, #14]
+  84:Src/i2c.c     ****       }
+ 330              		.loc 1 84 0
+ 331 005c 0A22     		movs	r2, #10
+ 332 005e DA73     		strb	r2, [r3, #15]
+ 333              	.L24:
+  86:Src/i2c.c     ****         wii_JOYdati.stato = 2;
+ 334              		.loc 1 86 0
+ 335 0060 5D4B     		ldr	r3, .L32
+ 336 0062 1B7B     		ldrb	r3, [r3, #12]	@ zero_extendqisi2
+ 337 0064 73B9     		cbnz	r3, .L30
+ 338              	.L25:
+  90:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 339              		.loc 1 90 0
+ 340 0066 5C4B     		ldr	r3, .L32
+ 341 0068 9B7B     		ldrb	r3, [r3, #14]	@ zero_extendqisi2
+ 342 006a 002B     		cmp	r3, #0
+ 343 006c E8D0     		beq	.L13
+  91:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 344              		.loc 1 91 0
+ 345 006e 5A4B     		ldr	r3, .L32
+ 346 0070 0022     		movs	r2, #0
+ 347 0072 1A73     		strb	r2, [r3, #12]
+  92:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ 348              		.loc 1 92 0
+ 349 0074 5A73     		strb	r2, [r3, #13]
+  93:Src/i2c.c     ****         wii_JOYdati.stato = 10;
+ 350              		.loc 1 93 0
+ 351 0076 9A73     		strb	r2, [r3, #14]
+  94:Src/i2c.c     ****         wii_JOYdati.ay = 127;
+ 352              		.loc 1 94 0
+ 353 0078 0A22     		movs	r2, #10
+ 354 007a DA73     		strb	r2, [r3, #15]
+  95:Src/i2c.c     ****         wii_JOYdati.ax = 127;
+ 355              		.loc 1 95 0
+ 356 007c 7F22     		movs	r2, #127
+ARM GAS  /tmp/ccSCBC5z.s 			page 11
+
+
+ 357 007e 5A70     		strb	r2, [r3, #1]
+  96:Src/i2c.c     ****       }
+ 358              		.loc 1 96 0
+ 359 0080 1A70     		strb	r2, [r3]
+ 360 0082 DDE7     		b	.L13
+ 361              	.L30:
+  87:Src/i2c.c     ****         wii_JOYdati.mS = HAL_GetTick();
+ 362              		.loc 1 87 0
+ 363 0084 544C     		ldr	r4, .L32
+ 364 0086 0223     		movs	r3, #2
+ 365 0088 E373     		strb	r3, [r4, #15]
+  88:Src/i2c.c     ****       }
+ 366              		.loc 1 88 0
+ 367 008a FFF7FEFF 		bl	HAL_GetTick
+ 368              	.LVL15:
+ 369 008e 2061     		str	r0, [r4, #16]
+ 370 0090 E9E7     		b	.L25
+ 371              	.L18:
+ 101:Src/i2c.c     ****         wii_JOYdati.stato = 3;
+ 372              		.loc 1 101 0
+ 373 0092 FFF7FEFF 		bl	HAL_GetTick
+ 374              	.LVL16:
+ 375 0096 504B     		ldr	r3, .L32
+ 376 0098 1B69     		ldr	r3, [r3, #16]
+ 377 009a C01A     		subs	r0, r0, r3
+ 378 009c 0128     		cmp	r0, #1
+ 379 009e CFD9     		bls	.L13
+ 102:Src/i2c.c     ****       }
+ 380              		.loc 1 102 0
+ 381 00a0 4D4B     		ldr	r3, .L32
+ 382 00a2 0322     		movs	r2, #3
+ 383 00a4 DA73     		strb	r2, [r3, #15]
+ 384 00a6 CBE7     		b	.L13
+ 385              	.L19:
+ 107:Src/i2c.c     ****       wii_JOYdati.I2CRxDone = 0;
+ 386              		.loc 1 107 0
+ 387 00a8 4B4C     		ldr	r4, .L32
+ 388 00aa 0023     		movs	r3, #0
+ 389 00ac 2373     		strb	r3, [r4, #12]
+ 108:Src/i2c.c     ****       wii_JOYdati.I2CERROR = 0;
+ 390              		.loc 1 108 0
+ 391 00ae 6373     		strb	r3, [r4, #13]
+ 109:Src/i2c.c     ****       HAL_I2C_Master_Receive_DMA(&hi2c2, 0xA5, (uint8_t*)wii_JOYdati.ai2cBuffer, 6);
+ 392              		.loc 1 109 0
+ 393 00b0 A373     		strb	r3, [r4, #14]
+ 110:Src/i2c.c     ****       wii_JOYdati.stato = 4;
+ 394              		.loc 1 110 0
+ 395 00b2 0623     		movs	r3, #6
+ 396 00b4 621D     		adds	r2, r4, #5
+ 397 00b6 A521     		movs	r1, #165
+ 398 00b8 4848     		ldr	r0, .L32+4
+ 399 00ba FFF7FEFF 		bl	HAL_I2C_Master_Receive_DMA
+ 400              	.LVL17:
+ 111:Src/i2c.c     ****       wii_JOYdati.mS = HAL_GetTick();
+ 401              		.loc 1 111 0
+ 402 00be 0423     		movs	r3, #4
+ 403 00c0 E373     		strb	r3, [r4, #15]
+ARM GAS  /tmp/ccSCBC5z.s 			page 12
+
+
+ 112:Src/i2c.c     ****     break;
+ 404              		.loc 1 112 0
+ 405 00c2 FFF7FEFF 		bl	HAL_GetTick
+ 406              	.LVL18:
+ 407 00c6 2061     		str	r0, [r4, #16]
+ 113:Src/i2c.c     **** 
+ 408              		.loc 1 113 0
+ 409 00c8 BAE7     		b	.L13
+ 410              	.L20:
+ 116:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 411              		.loc 1 116 0
+ 412 00ca FFF7FEFF 		bl	HAL_GetTick
+ 413              	.LVL19:
+ 414 00ce 424B     		ldr	r3, .L32
+ 415 00d0 1B69     		ldr	r3, [r3, #16]
+ 416 00d2 C01A     		subs	r0, r0, r3
+ 417 00d4 3228     		cmp	r0, #50
+ 418 00d6 09D9     		bls	.L26
+ 117:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 419              		.loc 1 117 0
+ 420 00d8 3F4B     		ldr	r3, .L32
+ 421 00da 0022     		movs	r2, #0
+ 422 00dc 1A73     		strb	r2, [r3, #12]
+ 118:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ 423              		.loc 1 118 0
+ 424 00de 5A73     		strb	r2, [r3, #13]
+ 119:Src/i2c.c     ****         wii_JOYdati.stato = 10;
+ 425              		.loc 1 119 0
+ 426 00e0 9A73     		strb	r2, [r3, #14]
+ 120:Src/i2c.c     ****         wii_JOYdati.ay = 127;
+ 427              		.loc 1 120 0
+ 428 00e2 0A22     		movs	r2, #10
+ 429 00e4 DA73     		strb	r2, [r3, #15]
+ 121:Src/i2c.c     ****         wii_JOYdati.ax = 127;
+ 430              		.loc 1 121 0
+ 431 00e6 7F22     		movs	r2, #127
+ 432 00e8 5A70     		strb	r2, [r3, #1]
+ 122:Src/i2c.c     ****       }
+ 433              		.loc 1 122 0
+ 434 00ea 1A70     		strb	r2, [r3]
+ 435              	.L26:
+ 124:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 436              		.loc 1 124 0
+ 437 00ec 3A4B     		ldr	r3, .L32
+ 438 00ee 9B7B     		ldrb	r3, [r3, #14]	@ zero_extendqisi2
+ 439 00f0 4BB1     		cbz	r3, .L27
+ 125:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 440              		.loc 1 125 0
+ 441 00f2 394B     		ldr	r3, .L32
+ 442 00f4 0022     		movs	r2, #0
+ 443 00f6 1A73     		strb	r2, [r3, #12]
+ 126:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ 444              		.loc 1 126 0
+ 445 00f8 5A73     		strb	r2, [r3, #13]
+ 127:Src/i2c.c     ****         wii_JOYdati.stato = 10;
+ 446              		.loc 1 127 0
+ 447 00fa 9A73     		strb	r2, [r3, #14]
+ARM GAS  /tmp/ccSCBC5z.s 			page 13
+
+
+ 128:Src/i2c.c     ****         wii_JOYdati.ay = 127;
+ 448              		.loc 1 128 0
+ 449 00fc 0A22     		movs	r2, #10
+ 450 00fe DA73     		strb	r2, [r3, #15]
+ 129:Src/i2c.c     ****         wii_JOYdati.ax = 127;
+ 451              		.loc 1 129 0
+ 452 0100 7F22     		movs	r2, #127
+ 453 0102 5A70     		strb	r2, [r3, #1]
+ 130:Src/i2c.c     ****       }
+ 454              		.loc 1 130 0
+ 455 0104 1A70     		strb	r2, [r3]
+ 456              	.L27:
+ 132:Src/i2c.c     ****         HAL_NVIC_DisableIRQ(DMA1_Channel5_IRQn);
+ 457              		.loc 1 132 0
+ 458 0106 344B     		ldr	r3, .L32
+ 459 0108 5B7B     		ldrb	r3, [r3, #13]	@ zero_extendqisi2
+ 460 010a 002B     		cmp	r3, #0
+ 461 010c 98D0     		beq	.L13
+ 133:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 462              		.loc 1 133 0
+ 463 010e 0F20     		movs	r0, #15
+ 464 0110 FFF7FEFF 		bl	HAL_NVIC_DisableIRQ
+ 465              	.LVL20:
+ 134:Src/i2c.c     ****         //Copia dati
+ 466              		.loc 1 134 0
+ 467 0114 304C     		ldr	r4, .L32
+ 468 0116 0025     		movs	r5, #0
+ 469 0118 6573     		strb	r5, [r4, #13]
+ 136:Src/i2c.c     ****         wii_JOYdati.ax = nunchuk_decode_byte(wii_JOYdati.ai2cBuffer[0]);
+ 470              		.loc 1 136 0
+ 471 011a A079     		ldrb	r0, [r4, #6]	@ zero_extendqisi2
+ 472 011c FFF7FEFF 		bl	nunchuk_decode_byte
+ 473              	.LVL21:
+ 474 0120 6070     		strb	r0, [r4, #1]
+ 137:Src/i2c.c     ****         temp = nunchuk_decode_byte(wii_JOYdati.ai2cBuffer[5]);
+ 475              		.loc 1 137 0
+ 476 0122 6079     		ldrb	r0, [r4, #5]	@ zero_extendqisi2
+ 477 0124 FFF7FEFF 		bl	nunchuk_decode_byte
+ 478              	.LVL22:
+ 479 0128 2070     		strb	r0, [r4]
+ 138:Src/i2c.c     **** 
+ 480              		.loc 1 138 0
+ 481 012a A07A     		ldrb	r0, [r4, #10]	@ zero_extendqisi2
+ 482 012c FFF7FEFF 		bl	nunchuk_decode_byte
+ 483              	.LVL23:
+ 140:Src/i2c.c     ****         wii_JOYdati.bc = wii_JOYdati.bc >> 1;
+ 484              		.loc 1 140 0
+ 485 0130 00F00203 		and	r3, r0, #2
+ 486 0134 A370     		strb	r3, [r4, #2]
+ 141:Src/i2c.c     ****         wii_JOYdati.bc = wii_JOYdati.bc & 0x01;
+ 487              		.loc 1 141 0
+ 488 0136 A378     		ldrb	r3, [r4, #2]	@ zero_extendqisi2
+ 489 0138 5B08     		lsrs	r3, r3, #1
+ 490 013a A370     		strb	r3, [r4, #2]
+ 142:Src/i2c.c     ****         wii_JOYdati.bz = temp & 0x01;
+ 491              		.loc 1 142 0
+ 492 013c A378     		ldrb	r3, [r4, #2]	@ zero_extendqisi2
+ARM GAS  /tmp/ccSCBC5z.s 			page 14
+
+
+ 493 013e 03F00103 		and	r3, r3, #1
+ 494 0142 A370     		strb	r3, [r4, #2]
+ 143:Src/i2c.c     ****         wii_JOYdati.done = 1;
+ 495              		.loc 1 143 0
+ 496 0144 00F00100 		and	r0, r0, #1
+ 497              	.LVL24:
+ 498 0148 E070     		strb	r0, [r4, #3]
+ 144:Src/i2c.c     **** 
+ 499              		.loc 1 144 0
+ 500 014a 0123     		movs	r3, #1
+ 501 014c 2371     		strb	r3, [r4, #4]
+ 146:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 502              		.loc 1 146 0
+ 503 014e 0F20     		movs	r0, #15
+ 504 0150 FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+ 505              	.LVL25:
+ 147:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 506              		.loc 1 147 0
+ 507 0154 2573     		strb	r5, [r4, #12]
+ 148:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ 508              		.loc 1 148 0
+ 509 0156 6573     		strb	r5, [r4, #13]
+ 149:Src/i2c.c     **** 
+ 510              		.loc 1 149 0
+ 511 0158 A573     		strb	r5, [r4, #14]
+ 151:Src/i2c.c     ****         wii_JOYdati.stato = 11;
+ 512              		.loc 1 151 0
+ 513 015a FFF7FEFF 		bl	HAL_GetTick
+ 514              	.LVL26:
+ 515 015e 2061     		str	r0, [r4, #16]
+ 152:Src/i2c.c     ****       }
+ 516              		.loc 1 152 0
+ 517 0160 0B23     		movs	r3, #11
+ 518 0162 E373     		strb	r3, [r4, #15]
+ 519 0164 6CE7     		b	.L13
+ 520              	.L21:
+ 157:Src/i2c.c     ****       wii_JOYdati.I2CRxDone = 0;
+ 521              		.loc 1 157 0
+ 522 0166 1C4C     		ldr	r4, .L32
+ 523 0168 0023     		movs	r3, #0
+ 524 016a 2373     		strb	r3, [r4, #12]
+ 158:Src/i2c.c     ****       wii_JOYdati.I2CERROR = 0;
+ 525              		.loc 1 158 0
+ 526 016c 6373     		strb	r3, [r4, #13]
+ 159:Src/i2c.c     ****       wii_JOYdati.stato = 11;
+ 527              		.loc 1 159 0
+ 528 016e A373     		strb	r3, [r4, #14]
+ 160:Src/i2c.c     ****       wii_JOYdati.mS = HAL_GetTick();
+ 529              		.loc 1 160 0
+ 530 0170 0B23     		movs	r3, #11
+ 531 0172 E373     		strb	r3, [r4, #15]
+ 161:Src/i2c.c     ****     break;
+ 532              		.loc 1 161 0
+ 533 0174 FFF7FEFF 		bl	HAL_GetTick
+ 534              	.LVL27:
+ 535 0178 2061     		str	r0, [r4, #16]
+ 162:Src/i2c.c     **** 
+ARM GAS  /tmp/ccSCBC5z.s 			page 15
+
+
+ 536              		.loc 1 162 0
+ 537 017a 61E7     		b	.L13
+ 538              	.L22:
+ 165:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 539              		.loc 1 165 0
+ 540 017c FFF7FEFF 		bl	HAL_GetTick
+ 541              	.LVL28:
+ 542 0180 154B     		ldr	r3, .L32
+ 543 0182 1B69     		ldr	r3, [r3, #16]
+ 544 0184 9842     		cmp	r0, r3
+ 545 0186 3FF45BAF 		beq	.L13
+ 166:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 546              		.loc 1 166 0
+ 547 018a 134B     		ldr	r3, .L32
+ 548 018c 0022     		movs	r2, #0
+ 549 018e 1A73     		strb	r2, [r3, #12]
+ 167:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ 550              		.loc 1 167 0
+ 551 0190 5A73     		strb	r2, [r3, #13]
+ 168:Src/i2c.c     ****         wii_JOYdati.stato = 0;
+ 552              		.loc 1 168 0
+ 553 0192 9A73     		strb	r2, [r3, #14]
+ 169:Src/i2c.c     ****       }
+ 554              		.loc 1 169 0
+ 555 0194 DA73     		strb	r2, [r3, #15]
+ 556 0196 53E7     		b	.L13
+ 557              	.L23:
+ 174:Src/i2c.c     ****         wii_JOYdati.stato = 1;
+ 558              		.loc 1 174 0
+ 559 0198 1048     		ldr	r0, .L32+4
+ 560 019a FFF7FEFF 		bl	HAL_I2C_GetState
+ 561              	.LVL29:
+ 562 019e 2028     		cmp	r0, #32
+ 563 01a0 12D0     		beq	.L31
+ 564              	.L28:
+ 178:Src/i2c.c     ****         wii_JOYdati.I2CTxDone = 0;
+ 565              		.loc 1 178 0
+ 566 01a2 FFF7FEFF 		bl	HAL_GetTick
+ 567              	.LVL30:
+ 568 01a6 0C4B     		ldr	r3, .L32
+ 569 01a8 1B69     		ldr	r3, [r3, #16]
+ 570 01aa C01A     		subs	r0, r0, r3
+ 571 01ac 0628     		cmp	r0, #6
+ 572 01ae 7FF647AF 		bls	.L13
+ 179:Src/i2c.c     ****         wii_JOYdati.I2CRxDone = 0;
+ 573              		.loc 1 179 0
+ 574 01b2 094C     		ldr	r4, .L32
+ 575 01b4 0023     		movs	r3, #0
+ 576 01b6 2373     		strb	r3, [r4, #12]
+ 180:Src/i2c.c     ****         wii_JOYdati.I2CERROR = 0;
+ 577              		.loc 1 180 0
+ 578 01b8 6373     		strb	r3, [r4, #13]
+ 181:Src/i2c.c     ****         wii_JOYdati.stato = 11;
+ 579              		.loc 1 181 0
+ 580 01ba A373     		strb	r3, [r4, #14]
+ 182:Src/i2c.c     ****         wii_JOYdati.mS = HAL_GetTick();
+ 581              		.loc 1 182 0
+ARM GAS  /tmp/ccSCBC5z.s 			page 16
+
+
+ 582 01bc 0B23     		movs	r3, #11
+ 583 01be E373     		strb	r3, [r4, #15]
+ 183:Src/i2c.c     ****       }
+ 584              		.loc 1 183 0
+ 585 01c0 FFF7FEFF 		bl	HAL_GetTick
+ 586              	.LVL31:
+ 587 01c4 2061     		str	r0, [r4, #16]
+ 188:Src/i2c.c     **** 
+ 588              		.loc 1 188 0
+ 589 01c6 3BE7     		b	.L13
+ 590              	.L31:
+ 175:Src/i2c.c     ****         wii_JOYdati.mS = HAL_GetTick();
+ 591              		.loc 1 175 0
+ 592 01c8 034C     		ldr	r4, .L32
+ 593 01ca 0123     		movs	r3, #1
+ 594 01cc E373     		strb	r3, [r4, #15]
+ 176:Src/i2c.c     ****       }
+ 595              		.loc 1 176 0
+ 596 01ce FFF7FEFF 		bl	HAL_GetTick
+ 597              	.LVL32:
+ 598 01d2 2061     		str	r0, [r4, #16]
+ 599 01d4 E5E7     		b	.L28
+ 600              	.L33:
+ 601 01d6 00BF     		.align	2
+ 602              	.L32:
+ 603 01d8 00000000 		.word	wii_JOYdati
+ 604 01dc 00000000 		.word	hi2c2
+ 605              		.cfi_endproc
+ 606              	.LFE68:
+ 608              		.section	.text.HAL_I2C_MasterTxCpltCallback,"ax",%progbits
+ 609              		.align	1
+ 610              		.global	HAL_I2C_MasterTxCpltCallback
+ 611              		.syntax unified
+ 612              		.thumb
+ 613              		.thumb_func
+ 614              		.fpu softvfp
+ 616              	HAL_I2C_MasterTxCpltCallback:
+ 617              	.LFB70:
+ 201:Src/i2c.c     **** 
+ 202:Src/i2c.c     **** 
+ 203:Src/i2c.c     **** 
+ 204:Src/i2c.c     **** 
+ 205:Src/i2c.c     **** 
+ 206:Src/i2c.c     **** //HAL_I2C_Master_Transmit_DMA
+ 207:Src/i2c.c     **** //HAL_I2C_Master_Receive_DMA
+ 208:Src/i2c.c     **** 
+ 209:Src/i2c.c     **** void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
+ 210:Src/i2c.c     **** {
+ 618              		.loc 1 210 0
+ 619              		.cfi_startproc
+ 620              		@ args = 0, pretend = 0, frame = 0
+ 621              		@ frame_needed = 0, uses_anonymous_args = 0
+ 622              		@ link register save eliminated.
+ 623              	.LVL33:
+ 211:Src/i2c.c     ****   if(hi2c->Instance == I2C2){
+ 624              		.loc 1 211 0
+ 625 0000 0268     		ldr	r2, [r0]
+ARM GAS  /tmp/ccSCBC5z.s 			page 17
+
+
+ 626 0002 044B     		ldr	r3, .L37
+ 627 0004 9A42     		cmp	r2, r3
+ 628 0006 00D0     		beq	.L36
+ 629              	.L34:
+ 212:Src/i2c.c     ****     wii_JOYdati.I2CTxDone = 1;
+ 213:Src/i2c.c     ****   }
+ 214:Src/i2c.c     **** }
+ 630              		.loc 1 214 0
+ 631 0008 7047     		bx	lr
+ 632              	.L36:
+ 212:Src/i2c.c     ****     wii_JOYdati.I2CTxDone = 1;
+ 633              		.loc 1 212 0
+ 634 000a 034B     		ldr	r3, .L37+4
+ 635 000c 0122     		movs	r2, #1
+ 636 000e 1A73     		strb	r2, [r3, #12]
+ 637              		.loc 1 214 0
+ 638 0010 FAE7     		b	.L34
+ 639              	.L38:
+ 640 0012 00BF     		.align	2
+ 641              	.L37:
+ 642 0014 00580040 		.word	1073764352
+ 643 0018 00000000 		.word	wii_JOYdati
+ 644              		.cfi_endproc
+ 645              	.LFE70:
+ 647              		.section	.text.HAL_I2C_MasterRxCpltCallback,"ax",%progbits
+ 648              		.align	1
+ 649              		.global	HAL_I2C_MasterRxCpltCallback
+ 650              		.syntax unified
+ 651              		.thumb
+ 652              		.thumb_func
+ 653              		.fpu softvfp
+ 655              	HAL_I2C_MasterRxCpltCallback:
+ 656              	.LFB71:
+ 215:Src/i2c.c     **** void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c){
+ 657              		.loc 1 215 0
+ 658              		.cfi_startproc
+ 659              		@ args = 0, pretend = 0, frame = 0
+ 660              		@ frame_needed = 0, uses_anonymous_args = 0
+ 661              		@ link register save eliminated.
+ 662              	.LVL34:
+ 216:Src/i2c.c     ****   if(hi2c->Instance == I2C2){
+ 663              		.loc 1 216 0
+ 664 0000 0268     		ldr	r2, [r0]
+ 665 0002 044B     		ldr	r3, .L42
+ 666 0004 9A42     		cmp	r2, r3
+ 667 0006 00D0     		beq	.L41
+ 668              	.L39:
+ 217:Src/i2c.c     ****     wii_JOYdati.I2CRxDone = 1;
+ 218:Src/i2c.c     ****   }
+ 219:Src/i2c.c     **** }
+ 669              		.loc 1 219 0
+ 670 0008 7047     		bx	lr
+ 671              	.L41:
+ 217:Src/i2c.c     ****     wii_JOYdati.I2CRxDone = 1;
+ 672              		.loc 1 217 0
+ 673 000a 034B     		ldr	r3, .L42+4
+ 674 000c 0122     		movs	r2, #1
+ARM GAS  /tmp/ccSCBC5z.s 			page 18
+
+
+ 675 000e 5A73     		strb	r2, [r3, #13]
+ 676              		.loc 1 219 0
+ 677 0010 FAE7     		b	.L39
+ 678              	.L43:
+ 679 0012 00BF     		.align	2
+ 680              	.L42:
+ 681 0014 00580040 		.word	1073764352
+ 682 0018 00000000 		.word	wii_JOYdati
+ 683              		.cfi_endproc
+ 684              	.LFE71:
+ 686              		.section	.text.HAL_I2C_ErrorCallback,"ax",%progbits
+ 687              		.align	1
+ 688              		.global	HAL_I2C_ErrorCallback
+ 689              		.syntax unified
+ 690              		.thumb
+ 691              		.thumb_func
+ 692              		.fpu softvfp
+ 694              	HAL_I2C_ErrorCallback:
+ 695              	.LFB72:
+ 220:Src/i2c.c     **** void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
+ 221:Src/i2c.c     **** {
+ 696              		.loc 1 221 0
+ 697              		.cfi_startproc
+ 698              		@ args = 0, pretend = 0, frame = 0
+ 699              		@ frame_needed = 0, uses_anonymous_args = 0
+ 700              		@ link register save eliminated.
+ 701              	.LVL35:
+ 222:Src/i2c.c     ****   /*if(hi2c->Instance == I2C2){
+ 223:Src/i2c.c     ****     wii_JOYdati.I2CERROR = 1;
+ 224:Src/i2c.c     ****   }*/
+ 225:Src/i2c.c     **** }
+ 702              		.loc 1 225 0
+ 703 0000 7047     		bx	lr
+ 704              		.cfi_endproc
+ 705              	.LFE72:
+ 707              		.comm	wii_JOYdati,20,4
+ 708              		.comm	hdma_i2c2_tx,68,4
+ 709              		.comm	hdma_i2c2_rx,68,4
+ 710              		.comm	hi2c2,84,4
+ 711              		.text
+ 712              	.Letext0:
+ 713              		.file 2 "/usr/arm-none-eabi/include/machine/_default_types.h"
+ 714              		.file 3 "/usr/arm-none-eabi/include/sys/_stdint.h"
+ 715              		.file 4 "Drivers/CMSIS/Include/core_cm3.h"
+ 716              		.file 5 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h"
+ 717              		.file 6 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h"
+ 718              		.file 7 "/usr/arm-none-eabi/include/sys/lock.h"
+ 719              		.file 8 "/usr/arm-none-eabi/include/sys/_types.h"
+ 720              		.file 9 "/usr/lib/gcc/arm-none-eabi/7.3.1/include/stddef.h"
+ 721              		.file 10 "/usr/arm-none-eabi/include/sys/reent.h"
+ 722              		.file 11 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 723              		.file 12 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 724              		.file 13 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+ 725              		.file 14 "Inc/i2c.h"
+ 726              		.file 15 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ 727              		.file 16 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h"
+ARM GAS  /tmp/ccSCBC5z.s 			page 19
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 i2c.c
+     /tmp/ccSCBC5z.s:16     .text.MX_I2C2_Init:0000000000000000 $t
+     /tmp/ccSCBC5z.s:23     .text.MX_I2C2_Init:0000000000000000 MX_I2C2_Init
+     /tmp/ccSCBC5z.s:137    .text.MX_I2C2_Init:0000000000000090 $d
+                            *COM*:0000000000000054 hi2c2
+                            *COM*:0000000000000014 wii_JOYdati
+     /tmp/ccSCBC5z.s:145    .text.WiiNunchuck_INIT:0000000000000000 $t
+     /tmp/ccSCBC5z.s:152    .text.WiiNunchuck_INIT:0000000000000000 WiiNunchuck_INIT
+     /tmp/ccSCBC5z.s:205    .text.WiiNunchuck_INIT:0000000000000038 $d
+     /tmp/ccSCBC5z.s:211    .text.nunchuk_decode_byte:0000000000000000 $t
+     /tmp/ccSCBC5z.s:218    .text.nunchuk_decode_byte:0000000000000000 nunchuk_decode_byte
+     /tmp/ccSCBC5z.s:238    .text.WiiNunchuck_TASK:0000000000000000 $t
+     /tmp/ccSCBC5z.s:245    .text.WiiNunchuck_TASK:0000000000000000 WiiNunchuck_TASK
+     /tmp/ccSCBC5z.s:268    .text.WiiNunchuck_TASK:0000000000000012 $d
+     /tmp/ccSCBC5z.s:603    .text.WiiNunchuck_TASK:00000000000001d8 $d
+     /tmp/ccSCBC5z.s:609    .text.HAL_I2C_MasterTxCpltCallback:0000000000000000 $t
+     /tmp/ccSCBC5z.s:616    .text.HAL_I2C_MasterTxCpltCallback:0000000000000000 HAL_I2C_MasterTxCpltCallback
+     /tmp/ccSCBC5z.s:642    .text.HAL_I2C_MasterTxCpltCallback:0000000000000014 $d
+     /tmp/ccSCBC5z.s:648    .text.HAL_I2C_MasterRxCpltCallback:0000000000000000 $t
+     /tmp/ccSCBC5z.s:655    .text.HAL_I2C_MasterRxCpltCallback:0000000000000000 HAL_I2C_MasterRxCpltCallback
+     /tmp/ccSCBC5z.s:681    .text.HAL_I2C_MasterRxCpltCallback:0000000000000014 $d
+     /tmp/ccSCBC5z.s:687    .text.HAL_I2C_ErrorCallback:0000000000000000 $t
+     /tmp/ccSCBC5z.s:694    .text.HAL_I2C_ErrorCallback:0000000000000000 HAL_I2C_ErrorCallback
+                            *COM*:0000000000000044 hdma_i2c2_tx
+                            *COM*:0000000000000044 hdma_i2c2_rx
+     /tmp/ccSCBC5z.s:281    .text.WiiNunchuck_TASK:000000000000001f $d
+     /tmp/ccSCBC5z.s:281    .text.WiiNunchuck_TASK:0000000000000020 $t
+
+UNDEFINED SYMBOLS
+HAL_NVIC_SetPriority
+HAL_NVIC_EnableIRQ
+HAL_I2C_Init
+Error_Handler
+HAL_I2C_Master_Transmit_DMA
+HAL_Delay
+HAL_GetTick
+HAL_I2C_Master_Receive_DMA
+HAL_NVIC_DisableIRQ
+HAL_I2C_GetState

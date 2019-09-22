@@ -1,0 +1,2492 @@
+ARM GAS  /tmp/ccht7BbS.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 1
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"hd44780.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.LCD_I2C_WriteOut,"ax",%progbits
+  16              		.align	1
+  17              		.global	LCD_I2C_WriteOut
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu softvfp
+  23              	LCD_I2C_WriteOut:
+  24              	.LFB67:
+  25              		.file 1 "Src/hd44780.c"
+   1:Src/hd44780.c **** /*
+   2:Src/hd44780.c ****  *  * hd44780.c
+   3:Src/hd44780.c ****  *
+   4:Src/hd44780.c ****  *  Created on: Feb 20, 2014
+   5:Src/hd44780.c ****  *      Author: Peter
+   6:Src/hd44780.c ****  */
+   7:Src/hd44780.c **** 
+   8:Src/hd44780.c **** #include "hd44780.h"
+   9:Src/hd44780.c **** 
+  10:Src/hd44780.c **** uint32_t PCF8574_Type0Pins[8] = { 4, 5, 6, 7, 0, 1, 2, 3 };
+  11:Src/hd44780.c **** uint8_t LCDerrorFlag = 0;
+  12:Src/hd44780.c **** 
+  13:Src/hd44780.c **** void LCD_WaitForBusyFlag(LCD_PCF8574_HandleTypeDef* handle) {
+  14:Src/hd44780.c **** 	uint8_t flag;
+  15:Src/hd44780.c **** 	LCD_GetBusyFlag(handle, &flag);
+  16:Src/hd44780.c **** 	uint32_t startTick=HAL_GetTick();
+  17:Src/hd44780.c **** 	while (flag == 1 && HAL_GetTick()-startTick<handle->pcf8574.PCF_I2C_TIMEOUT) {
+  18:Src/hd44780.c **** 		LCD_GetBusyFlag(handle, &flag);
+  19:Src/hd44780.c **** 	}
+  20:Src/hd44780.c **** }
+  21:Src/hd44780.c **** 
+  22:Src/hd44780.c **** LCD_RESULT LCD_I2C_WriteOut(LCD_PCF8574_HandleTypeDef* handle) {
+  26              		.loc 1 22 0
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 0
+  29              		@ frame_needed = 0, uses_anonymous_args = 0
+  30              	.LVL0:
+  31 0000 08B5     		push	{r3, lr}
+  32              	.LCFI0:
+  33              		.cfi_def_cfa_offset 8
+  34              		.cfi_offset 3, -8
+  35              		.cfi_offset 14, -4
+  23:Src/hd44780.c **** 	if (!LCDerrorFlag) {
+ARM GAS  /tmp/ccht7BbS.s 			page 2
+
+
+  36              		.loc 1 23 0
+  37 0002 084B     		ldr	r3, .L7
+  38 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  39 0006 0BB1     		cbz	r3, .L6
+  24:Src/hd44780.c **** 		if (PCF8574_Write(&handle->pcf8574, handle->state) != PCF8574_OK) {
+  25:Src/hd44780.c **** 			//handle->errorCallback(LCD_ERROR);
+  26:Src/hd44780.c **** 			LCDerrorFlag = 1;
+  27:Src/hd44780.c **** 			return LCD_ERROR;
+  28:Src/hd44780.c **** 		}
+  29:Src/hd44780.c **** 		return LCD_OK;
+  30:Src/hd44780.c **** 	}
+  31:Src/hd44780.c **** 	return LCD_ERROR;
+  40              		.loc 1 31 0
+  41 0008 0120     		movs	r0, #1
+  42              	.LVL1:
+  43              	.L2:
+  32:Src/hd44780.c **** }
+  44              		.loc 1 32 0
+  45 000a 08BD     		pop	{r3, pc}
+  46              	.LVL2:
+  47              	.L6:
+  24:Src/hd44780.c **** 		if (PCF8574_Write(&handle->pcf8574, handle->state) != PCF8574_OK) {
+  48              		.loc 1 24 0
+  49 000c 90F83410 		ldrb	r1, [r0, #52]	@ zero_extendqisi2
+  50 0010 4030     		adds	r0, r0, #64
+  51              	.LVL3:
+  52 0012 FFF7FEFF 		bl	PCF8574_Write
+  53              	.LVL4:
+  54 0016 18B1     		cbz	r0, .L4
+  26:Src/hd44780.c **** 			return LCD_ERROR;
+  55              		.loc 1 26 0
+  56 0018 0120     		movs	r0, #1
+  57 001a 024B     		ldr	r3, .L7
+  58 001c 1870     		strb	r0, [r3]
+  27:Src/hd44780.c **** 		}
+  59              		.loc 1 27 0
+  60 001e F4E7     		b	.L2
+  61              	.L4:
+  29:Src/hd44780.c **** 	}
+  62              		.loc 1 29 0
+  63 0020 0020     		movs	r0, #0
+  64 0022 F2E7     		b	.L2
+  65              	.L8:
+  66              		.align	2
+  67              	.L7:
+  68 0024 00000000 		.word	.LANCHOR0
+  69              		.cfi_endproc
+  70              	.LFE67:
+  72              		.section	.text.LCD_StateWriteBit,"ax",%progbits
+  73              		.align	1
+  74              		.global	LCD_StateWriteBit
+  75              		.syntax unified
+  76              		.thumb
+  77              		.thumb_func
+  78              		.fpu softvfp
+  80              	LCD_StateWriteBit:
+  81              	.LFB69:
+ARM GAS  /tmp/ccht7BbS.s 			page 3
+
+
+  33:Src/hd44780.c **** 
+  34:Src/hd44780.c **** LCD_RESULT LCD_StateLEDControl(LCD_PCF8574_HandleTypeDef* handle, uint8_t on) {
+  35:Src/hd44780.c **** 	return LCD_StateWriteBit(handle, on & 1, LCD_PIN_LED);
+  36:Src/hd44780.c **** }
+  37:Src/hd44780.c **** 
+  38:Src/hd44780.c **** LCD_RESULT LCD_StateWriteBit(LCD_PCF8574_HandleTypeDef* handle, uint8_t value,
+  39:Src/hd44780.c **** 		LCD_PIN pin) {
+  82              		.loc 1 39 0
+  83              		.cfi_startproc
+  84              		@ args = 0, pretend = 0, frame = 0
+  85              		@ frame_needed = 0, uses_anonymous_args = 0
+  86              	.LVL5:
+  87 0000 08B5     		push	{r3, lr}
+  88              	.LCFI1:
+  89              		.cfi_def_cfa_offset 8
+  90              		.cfi_offset 3, -8
+  91              		.cfi_offset 14, -4
+  40:Src/hd44780.c **** 
+  41:Src/hd44780.c **** 	if (value) {
+  92              		.loc 1 41 0
+  93 0002 71B9     		cbnz	r1, .L13
+  42:Src/hd44780.c **** 		handle->state |= 1 << handle->pins[pin];
+  43:Src/hd44780.c **** 	} else {
+  44:Src/hd44780.c **** 		handle->state &= ~(1 << handle->pins[pin]);
+  94              		.loc 1 44 0
+  95 0004 836B     		ldr	r3, [r0, #56]
+  96 0006 53F82220 		ldr	r2, [r3, r2, lsl #2]
+  97              	.LVL6:
+  98 000a 0123     		movs	r3, #1
+  99 000c 03FA02F2 		lsl	r2, r3, r2
+ 100 0010 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 101 0014 23EA0203 		bic	r3, r3, r2
+ 102 0018 80F83430 		strb	r3, [r0, #52]
+ 103              	.L11:
+  45:Src/hd44780.c **** 	}
+  46:Src/hd44780.c **** 	return LCD_I2C_WriteOut(handle);
+ 104              		.loc 1 46 0
+ 105 001c FFF7FEFF 		bl	LCD_I2C_WriteOut
+ 106              	.LVL7:
+  47:Src/hd44780.c **** }
+ 107              		.loc 1 47 0
+ 108 0020 08BD     		pop	{r3, pc}
+ 109              	.LVL8:
+ 110              	.L13:
+  42:Src/hd44780.c **** 		handle->state |= 1 << handle->pins[pin];
+ 111              		.loc 1 42 0
+ 112 0022 836B     		ldr	r3, [r0, #56]
+ 113 0024 53F82220 		ldr	r2, [r3, r2, lsl #2]
+ 114              	.LVL9:
+ 115 0028 0123     		movs	r3, #1
+ 116 002a 03FA02F2 		lsl	r2, r3, r2
+ 117 002e 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 118 0032 1343     		orrs	r3, r3, r2
+ 119 0034 80F83430 		strb	r3, [r0, #52]
+ 120 0038 F0E7     		b	.L11
+ 121              		.cfi_endproc
+ 122              	.LFE69:
+ARM GAS  /tmp/ccht7BbS.s 			page 4
+
+
+ 124              		.section	.text.LCD_StateLEDControl,"ax",%progbits
+ 125              		.align	1
+ 126              		.global	LCD_StateLEDControl
+ 127              		.syntax unified
+ 128              		.thumb
+ 129              		.thumb_func
+ 130              		.fpu softvfp
+ 132              	LCD_StateLEDControl:
+ 133              	.LFB68:
+  34:Src/hd44780.c **** 	return LCD_StateWriteBit(handle, on & 1, LCD_PIN_LED);
+ 134              		.loc 1 34 0
+ 135              		.cfi_startproc
+ 136              		@ args = 0, pretend = 0, frame = 0
+ 137              		@ frame_needed = 0, uses_anonymous_args = 0
+ 138              	.LVL10:
+ 139 0000 08B5     		push	{r3, lr}
+ 140              	.LCFI2:
+ 141              		.cfi_def_cfa_offset 8
+ 142              		.cfi_offset 3, -8
+ 143              		.cfi_offset 14, -4
+  35:Src/hd44780.c **** }
+ 144              		.loc 1 35 0
+ 145 0002 0722     		movs	r2, #7
+ 146 0004 01F00101 		and	r1, r1, #1
+ 147              	.LVL11:
+ 148 0008 FFF7FEFF 		bl	LCD_StateWriteBit
+ 149              	.LVL12:
+  36:Src/hd44780.c **** 
+ 150              		.loc 1 36 0
+ 151 000c 08BD     		pop	{r3, pc}
+ 152              		.cfi_endproc
+ 153              	.LFE68:
+ 155              		.section	.text.LCD_WriteToDataBus,"ax",%progbits
+ 156              		.align	1
+ 157              		.global	LCD_WriteToDataBus
+ 158              		.syntax unified
+ 159              		.thumb
+ 160              		.thumb_func
+ 161              		.fpu softvfp
+ 163              	LCD_WriteToDataBus:
+ 164              	.LFB71:
+  48:Src/hd44780.c **** 
+  49:Src/hd44780.c **** LCD_RESULT LCD_Init(LCD_PCF8574_HandleTypeDef* handle) {
+  50:Src/hd44780.c **** 	handle->D = 1;
+  51:Src/hd44780.c **** 	handle->B = 0;
+  52:Src/hd44780.c **** 	handle->C = 0;
+  53:Src/hd44780.c **** 	if (handle->type == TYPE0) {
+  54:Src/hd44780.c **** 		handle->pins = PCF8574_Type0Pins;
+  55:Src/hd44780.c **** 	} else {
+  56:Src/hd44780.c **** 		//handle->errorCallback(LCD_ERROR);
+  57:Src/hd44780.c **** 		return LCD_ERROR;	// no type of subinterface was specified
+  58:Src/hd44780.c **** 	}
+  59:Src/hd44780.c **** 	if (PCF8574_Init(&handle->pcf8574) != PCF8574_OK) {
+  60:Src/hd44780.c **** 		//handle->errorCallback(LCD_ERROR);
+  61:Src/hd44780.c **** 		return LCD_ERROR;
+  62:Src/hd44780.c **** 	}
+  63:Src/hd44780.c **** 
+ARM GAS  /tmp/ccht7BbS.s 			page 5
+
+
+  64:Src/hd44780.c **** 	HAL_Delay(50);
+  65:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_RS);
+  66:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_RW);
+  67:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+  68:Src/hd44780.c **** 
+  69:Src/hd44780.c **** 	LCD_WriteToDataBus(handle, 3);
+  70:Src/hd44780.c **** 
+  71:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+  72:Src/hd44780.c **** 	HAL_Delay(1);
+  73:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+  74:Src/hd44780.c **** 	HAL_Delay(5);
+  75:Src/hd44780.c **** 
+  76:Src/hd44780.c **** 	LCD_WriteToDataBus(handle, 3);
+  77:Src/hd44780.c **** 
+  78:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+  79:Src/hd44780.c **** 	HAL_Delay(1);
+  80:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+  81:Src/hd44780.c **** 	HAL_Delay(1);
+  82:Src/hd44780.c **** 
+  83:Src/hd44780.c **** 	LCD_WriteToDataBus(handle, 3);
+  84:Src/hd44780.c **** 
+  85:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+  86:Src/hd44780.c **** 	HAL_Delay(1);
+  87:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+  88:Src/hd44780.c **** 	HAL_Delay(1);
+  89:Src/hd44780.c **** 
+  90:Src/hd44780.c **** 	LCD_WriteToDataBus(handle, 2);
+  91:Src/hd44780.c **** 
+  92:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+  93:Src/hd44780.c **** 	HAL_Delay(1);
+  94:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+  95:Src/hd44780.c **** 	HAL_Delay(1);
+  96:Src/hd44780.c **** 
+  97:Src/hd44780.c **** 	uint8_t cmd = 0;
+  98:Src/hd44780.c **** 	cmd = cmd | (handle->NUMBER_OF_LINES << 3);
+  99:Src/hd44780.c **** 	cmd = cmd | (1 << 5);
+ 100:Src/hd44780.c **** 
+ 101:Src/hd44780.c **** 	LCD_WriteCMD(handle, cmd);	// setting interface
+ 102:Src/hd44780.c **** 
+ 103:Src/hd44780.c **** 	cmd = 0;
+ 104:Src/hd44780.c **** 	cmd = cmd | (1 << 3);
+ 105:Src/hd44780.c **** 	cmd = cmd | (handle->C << 1);
+ 106:Src/hd44780.c **** 	cmd = cmd | handle->B;
+ 107:Src/hd44780.c **** 
+ 108:Src/hd44780.c **** 	LCD_WriteCMD(handle, cmd);	// setting display/cursor
+ 109:Src/hd44780.c **** 
+ 110:Src/hd44780.c **** 	LCD_ClearDisplay(handle);
+ 111:Src/hd44780.c **** 
+ 112:Src/hd44780.c **** 	LCD_EntryModeSet(handle, DIRECTION_INCREMENT, SHIFT_NO);
+ 113:Src/hd44780.c **** 
+ 114:Src/hd44780.c **** 	LCD_DisplayON(handle);
+ 115:Src/hd44780.c **** 
+ 116:Src/hd44780.c **** 	LCD_StateLEDControl(handle, 1);	// LED power on
+ 117:Src/hd44780.c **** 
+ 118:Src/hd44780.c **** 	return LCD_OK;
+ 119:Src/hd44780.c **** 
+ 120:Src/hd44780.c **** }
+ARM GAS  /tmp/ccht7BbS.s 			page 6
+
+
+ 121:Src/hd44780.c **** 
+ 122:Src/hd44780.c **** LCD_RESULT LCD_WriteToDataBus(LCD_PCF8574_HandleTypeDef* handle, uint8_t data) {
+ 165              		.loc 1 122 0
+ 166              		.cfi_startproc
+ 167              		@ args = 0, pretend = 0, frame = 0
+ 168              		@ frame_needed = 0, uses_anonymous_args = 0
+ 169              	.LVL13:
+ 170 0000 08B5     		push	{r3, lr}
+ 171              	.LCFI3:
+ 172              		.cfi_def_cfa_offset 8
+ 173              		.cfi_offset 3, -8
+ 174              		.cfi_offset 14, -4
+ 123:Src/hd44780.c **** 	if ((data & 1) == 1) {
+ 175              		.loc 1 123 0
+ 176 0002 11F0010F 		tst	r1, #1
+ 177 0006 34D0     		beq	.L17
+ 124:Src/hd44780.c **** 		handle->state |= 1 << handle->pins[LCD_PIN_D4];
+ 178              		.loc 1 124 0
+ 179 0008 836B     		ldr	r3, [r0, #56]
+ 180 000a 1A68     		ldr	r2, [r3]
+ 181 000c 0123     		movs	r3, #1
+ 182 000e 03FA02F2 		lsl	r2, r3, r2
+ 183 0012 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 184 0016 1343     		orrs	r3, r3, r2
+ 185 0018 80F83430 		strb	r3, [r0, #52]
+ 186              	.L18:
+ 125:Src/hd44780.c **** 	} else {
+ 126:Src/hd44780.c **** 		handle->state &= ~(1 << handle->pins[LCD_PIN_D4]);
+ 127:Src/hd44780.c **** 	}
+ 128:Src/hd44780.c **** 
+ 129:Src/hd44780.c **** 	if ((data & 2) == 2) {
+ 187              		.loc 1 129 0
+ 188 001c 11F0020F 		tst	r1, #2
+ 189 0020 33D0     		beq	.L19
+ 130:Src/hd44780.c **** 		handle->state |= 1 << handle->pins[LCD_PIN_D5];
+ 190              		.loc 1 130 0
+ 191 0022 836B     		ldr	r3, [r0, #56]
+ 192 0024 5A68     		ldr	r2, [r3, #4]
+ 193 0026 0123     		movs	r3, #1
+ 194 0028 03FA02F2 		lsl	r2, r3, r2
+ 195 002c 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 196 0030 1343     		orrs	r3, r3, r2
+ 197 0032 80F83430 		strb	r3, [r0, #52]
+ 198              	.L20:
+ 131:Src/hd44780.c **** 	} else {
+ 132:Src/hd44780.c **** 		handle->state &= ~(1 << handle->pins[LCD_PIN_D5]);
+ 133:Src/hd44780.c **** 	}
+ 134:Src/hd44780.c **** 
+ 135:Src/hd44780.c **** 	if ((data & 4) == 4) {
+ 199              		.loc 1 135 0
+ 200 0036 11F0040F 		tst	r1, #4
+ 201 003a 32D0     		beq	.L21
+ 136:Src/hd44780.c **** 		handle->state |= 1 << handle->pins[LCD_PIN_D6];
+ 202              		.loc 1 136 0
+ 203 003c 836B     		ldr	r3, [r0, #56]
+ 204 003e 9A68     		ldr	r2, [r3, #8]
+ 205 0040 0123     		movs	r3, #1
+ARM GAS  /tmp/ccht7BbS.s 			page 7
+
+
+ 206 0042 03FA02F2 		lsl	r2, r3, r2
+ 207 0046 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 208 004a 1343     		orrs	r3, r3, r2
+ 209 004c 80F83430 		strb	r3, [r0, #52]
+ 210              	.L22:
+ 137:Src/hd44780.c **** 	} else {
+ 138:Src/hd44780.c **** 		handle->state &= ~(1 << handle->pins[LCD_PIN_D6]);
+ 139:Src/hd44780.c **** 	}
+ 140:Src/hd44780.c **** 
+ 141:Src/hd44780.c **** 	if ((data & 8) == 8) {
+ 211              		.loc 1 141 0
+ 212 0050 11F0080F 		tst	r1, #8
+ 213 0054 31D1     		bne	.L26
+ 142:Src/hd44780.c **** 		handle->state |= 1 << handle->pins[LCD_PIN_D7];
+ 143:Src/hd44780.c **** 	} else {
+ 144:Src/hd44780.c **** 		handle->state &= ~(1 << handle->pins[LCD_PIN_D7]);
+ 214              		.loc 1 144 0
+ 215 0056 836B     		ldr	r3, [r0, #56]
+ 216 0058 DA68     		ldr	r2, [r3, #12]
+ 217 005a 0123     		movs	r3, #1
+ 218 005c 03FA02F2 		lsl	r2, r3, r2
+ 219 0060 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 220 0064 23EA0203 		bic	r3, r3, r2
+ 221 0068 80F83430 		strb	r3, [r0, #52]
+ 222              	.L24:
+ 145:Src/hd44780.c **** 	}
+ 146:Src/hd44780.c **** 
+ 147:Src/hd44780.c **** 	return LCD_I2C_WriteOut(handle);
+ 223              		.loc 1 147 0
+ 224 006c FFF7FEFF 		bl	LCD_I2C_WriteOut
+ 225              	.LVL14:
+ 148:Src/hd44780.c **** }
+ 226              		.loc 1 148 0
+ 227 0070 08BD     		pop	{r3, pc}
+ 228              	.LVL15:
+ 229              	.L17:
+ 126:Src/hd44780.c **** 	}
+ 230              		.loc 1 126 0
+ 231 0072 836B     		ldr	r3, [r0, #56]
+ 232 0074 1A68     		ldr	r2, [r3]
+ 233 0076 0123     		movs	r3, #1
+ 234 0078 03FA02F2 		lsl	r2, r3, r2
+ 235 007c 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 236 0080 23EA0203 		bic	r3, r3, r2
+ 237 0084 80F83430 		strb	r3, [r0, #52]
+ 238 0088 C8E7     		b	.L18
+ 239              	.L19:
+ 132:Src/hd44780.c **** 	}
+ 240              		.loc 1 132 0
+ 241 008a 836B     		ldr	r3, [r0, #56]
+ 242 008c 5A68     		ldr	r2, [r3, #4]
+ 243 008e 0123     		movs	r3, #1
+ 244 0090 03FA02F2 		lsl	r2, r3, r2
+ 245 0094 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 246 0098 23EA0203 		bic	r3, r3, r2
+ 247 009c 80F83430 		strb	r3, [r0, #52]
+ 248 00a0 C9E7     		b	.L20
+ARM GAS  /tmp/ccht7BbS.s 			page 8
+
+
+ 249              	.L21:
+ 138:Src/hd44780.c **** 	}
+ 250              		.loc 1 138 0
+ 251 00a2 836B     		ldr	r3, [r0, #56]
+ 252 00a4 9A68     		ldr	r2, [r3, #8]
+ 253 00a6 0123     		movs	r3, #1
+ 254 00a8 03FA02F2 		lsl	r2, r3, r2
+ 255 00ac 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 256 00b0 23EA0203 		bic	r3, r3, r2
+ 257 00b4 80F83430 		strb	r3, [r0, #52]
+ 258 00b8 CAE7     		b	.L22
+ 259              	.L26:
+ 142:Src/hd44780.c **** 	} else {
+ 260              		.loc 1 142 0
+ 261 00ba 836B     		ldr	r3, [r0, #56]
+ 262 00bc DA68     		ldr	r2, [r3, #12]
+ 263 00be 0123     		movs	r3, #1
+ 264 00c0 03FA02F2 		lsl	r2, r3, r2
+ 265 00c4 90F83430 		ldrb	r3, [r0, #52]	@ zero_extendqisi2
+ 266 00c8 1343     		orrs	r3, r3, r2
+ 267 00ca 80F83430 		strb	r3, [r0, #52]
+ 268 00ce CDE7     		b	.L24
+ 269              		.cfi_endproc
+ 270              	.LFE71:
+ 272              		.section	.text.LCD_GetBusyFlag,"ax",%progbits
+ 273              		.align	1
+ 274              		.global	LCD_GetBusyFlag
+ 275              		.syntax unified
+ 276              		.thumb
+ 277              		.thumb_func
+ 278              		.fpu softvfp
+ 280              	LCD_GetBusyFlag:
+ 281              	.LFB72:
+ 149:Src/hd44780.c **** 
+ 150:Src/hd44780.c **** LCD_RESULT LCD_GetBusyFlag(LCD_PCF8574_HandleTypeDef* handle, uint8_t* flag) {
+ 282              		.loc 1 150 0
+ 283              		.cfi_startproc
+ 284              		@ args = 0, pretend = 0, frame = 8
+ 285              		@ frame_needed = 0, uses_anonymous_args = 0
+ 286              	.LVL16:
+ 287 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 288              	.LCFI4:
+ 289              		.cfi_def_cfa_offset 20
+ 290              		.cfi_offset 4, -20
+ 291              		.cfi_offset 5, -16
+ 292              		.cfi_offset 6, -12
+ 293              		.cfi_offset 7, -8
+ 294              		.cfi_offset 14, -4
+ 295 0002 83B0     		sub	sp, sp, #12
+ 296              	.LCFI5:
+ 297              		.cfi_def_cfa_offset 32
+ 298 0004 0446     		mov	r4, r0
+ 299 0006 0D46     		mov	r5, r1
+ 151:Src/hd44780.c **** 
+ 152:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 300              		.loc 1 152 0
+ 301 0008 0622     		movs	r2, #6
+ARM GAS  /tmp/ccht7BbS.s 			page 9
+
+
+ 302 000a 0021     		movs	r1, #0
+ 303              	.LVL17:
+ 304 000c FFF7FEFF 		bl	LCD_StateWriteBit
+ 305              	.LVL18:
+ 153:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_RS);
+ 306              		.loc 1 153 0
+ 307 0010 0422     		movs	r2, #4
+ 308 0012 0021     		movs	r1, #0
+ 309 0014 2046     		mov	r0, r4
+ 310 0016 FFF7FEFF 		bl	LCD_StateWriteBit
+ 311              	.LVL19:
+ 154:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 1, LCD_PIN_RW);
+ 312              		.loc 1 154 0
+ 313 001a 0522     		movs	r2, #5
+ 314 001c 0121     		movs	r1, #1
+ 315 001e 2046     		mov	r0, r4
+ 316 0020 FFF7FEFF 		bl	LCD_StateWriteBit
+ 317              	.LVL20:
+ 155:Src/hd44780.c **** 
+ 156:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+ 318              		.loc 1 156 0
+ 319 0024 0622     		movs	r2, #6
+ 320 0026 0121     		movs	r1, #1
+ 321 0028 2046     		mov	r0, r4
+ 322 002a FFF7FEFF 		bl	LCD_StateWriteBit
+ 323              	.LVL21:
+ 157:Src/hd44780.c **** 
+ 158:Src/hd44780.c **** 	PCF8574_Read(&handle->pcf8574, flag);
+ 324              		.loc 1 158 0
+ 325 002e 04F14006 		add	r6, r4, #64
+ 326 0032 2946     		mov	r1, r5
+ 327 0034 3046     		mov	r0, r6
+ 328 0036 FFF7FEFF 		bl	PCF8574_Read
+ 329              	.LVL22:
+ 159:Src/hd44780.c **** 
+ 160:Src/hd44780.c **** 	*flag &= 1 << handle->pins[LCD_PIN_D7];
+ 330              		.loc 1 160 0
+ 331 003a A36B     		ldr	r3, [r4, #56]
+ 332 003c DA68     		ldr	r2, [r3, #12]
+ 333 003e 0127     		movs	r7, #1
+ 334 0040 07FA02F2 		lsl	r2, r7, r2
+ 335 0044 2B78     		ldrb	r3, [r5]	@ zero_extendqisi2
+ 336 0046 1340     		ands	r3, r3, r2
+ 337 0048 2B70     		strb	r3, [r5]
+ 161:Src/hd44780.c **** 	*flag >>= handle->pins[LCD_PIN_D7];
+ 338              		.loc 1 161 0
+ 339 004a A26B     		ldr	r2, [r4, #56]
+ 340 004c D268     		ldr	r2, [r2, #12]
+ 341 004e 1341     		asrs	r3, r3, r2
+ 342 0050 2B70     		strb	r3, [r5]
+ 162:Src/hd44780.c **** 
+ 163:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 343              		.loc 1 163 0
+ 344 0052 0622     		movs	r2, #6
+ 345 0054 0021     		movs	r1, #0
+ 346 0056 2046     		mov	r0, r4
+ 347 0058 FFF7FEFF 		bl	LCD_StateWriteBit
+ARM GAS  /tmp/ccht7BbS.s 			page 10
+
+
+ 348              	.LVL23:
+ 164:Src/hd44780.c **** 
+ 165:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+ 349              		.loc 1 165 0
+ 350 005c 0622     		movs	r2, #6
+ 351 005e 3946     		mov	r1, r7
+ 352 0060 2046     		mov	r0, r4
+ 353 0062 FFF7FEFF 		bl	LCD_StateWriteBit
+ 354              	.LVL24:
+ 166:Src/hd44780.c **** 
+ 167:Src/hd44780.c **** 	uint8_t flag2;
+ 168:Src/hd44780.c **** 	PCF8574_Read(&handle->pcf8574, &flag2);
+ 355              		.loc 1 168 0
+ 356 0066 0DF10701 		add	r1, sp, #7
+ 357 006a 3046     		mov	r0, r6
+ 358 006c FFF7FEFF 		bl	PCF8574_Read
+ 359              	.LVL25:
+ 169:Src/hd44780.c **** 
+ 170:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 360              		.loc 1 170 0
+ 361 0070 0622     		movs	r2, #6
+ 362 0072 0021     		movs	r1, #0
+ 363 0074 2046     		mov	r0, r4
+ 364 0076 FFF7FEFF 		bl	LCD_StateWriteBit
+ 365              	.LVL26:
+ 171:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_RW);
+ 366              		.loc 1 171 0
+ 367 007a 0522     		movs	r2, #5
+ 368 007c 0021     		movs	r1, #0
+ 369 007e 2046     		mov	r0, r4
+ 370 0080 FFF7FEFF 		bl	LCD_StateWriteBit
+ 371              	.LVL27:
+ 172:Src/hd44780.c **** 
+ 173:Src/hd44780.c **** 	return LCD_OK;
+ 174:Src/hd44780.c **** 
+ 175:Src/hd44780.c **** }
+ 372              		.loc 1 175 0
+ 373 0084 0020     		movs	r0, #0
+ 374 0086 03B0     		add	sp, sp, #12
+ 375              	.LCFI6:
+ 376              		.cfi_def_cfa_offset 20
+ 377              		@ sp needed
+ 378 0088 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 379              		.cfi_endproc
+ 380              	.LFE72:
+ 382              		.section	.text.LCD_WaitForBusyFlag,"ax",%progbits
+ 383              		.align	1
+ 384              		.global	LCD_WaitForBusyFlag
+ 385              		.syntax unified
+ 386              		.thumb
+ 387              		.thumb_func
+ 388              		.fpu softvfp
+ 390              	LCD_WaitForBusyFlag:
+ 391              	.LFB66:
+  13:Src/hd44780.c **** 	uint8_t flag;
+ 392              		.loc 1 13 0
+ 393              		.cfi_startproc
+ARM GAS  /tmp/ccht7BbS.s 			page 11
+
+
+ 394              		@ args = 0, pretend = 0, frame = 8
+ 395              		@ frame_needed = 0, uses_anonymous_args = 0
+ 396              	.LVL28:
+ 397 0000 30B5     		push	{r4, r5, lr}
+ 398              	.LCFI7:
+ 399              		.cfi_def_cfa_offset 12
+ 400              		.cfi_offset 4, -12
+ 401              		.cfi_offset 5, -8
+ 402              		.cfi_offset 14, -4
+ 403 0002 83B0     		sub	sp, sp, #12
+ 404              	.LCFI8:
+ 405              		.cfi_def_cfa_offset 24
+ 406 0004 0446     		mov	r4, r0
+  15:Src/hd44780.c **** 	uint32_t startTick=HAL_GetTick();
+ 407              		.loc 1 15 0
+ 408 0006 0DF10701 		add	r1, sp, #7
+ 409 000a FFF7FEFF 		bl	LCD_GetBusyFlag
+ 410              	.LVL29:
+  16:Src/hd44780.c **** 	while (flag == 1 && HAL_GetTick()-startTick<handle->pcf8574.PCF_I2C_TIMEOUT) {
+ 411              		.loc 1 16 0
+ 412 000e FFF7FEFF 		bl	HAL_GetTick
+ 413              	.LVL30:
+ 414 0012 0546     		mov	r5, r0
+ 415              	.LVL31:
+  17:Src/hd44780.c **** 		LCD_GetBusyFlag(handle, &flag);
+ 416              		.loc 1 17 0
+ 417 0014 04E0     		b	.L30
+ 418              	.LVL32:
+ 419              	.L32:
+  18:Src/hd44780.c **** 	}
+ 420              		.loc 1 18 0
+ 421 0016 0DF10701 		add	r1, sp, #7
+ 422 001a 2046     		mov	r0, r4
+ 423 001c FFF7FEFF 		bl	LCD_GetBusyFlag
+ 424              	.LVL33:
+ 425              	.L30:
+  17:Src/hd44780.c **** 		LCD_GetBusyFlag(handle, &flag);
+ 426              		.loc 1 17 0
+ 427 0020 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 428 0024 012B     		cmp	r3, #1
+ 429 0026 05D1     		bne	.L29
+  17:Src/hd44780.c **** 		LCD_GetBusyFlag(handle, &flag);
+ 430              		.loc 1 17 0 is_stmt 0 discriminator 1
+ 431 0028 FFF7FEFF 		bl	HAL_GetTick
+ 432              	.LVL34:
+ 433 002c 401B     		subs	r0, r0, r5
+ 434 002e 636C     		ldr	r3, [r4, #68]
+ 435 0030 9842     		cmp	r0, r3
+ 436 0032 F0D3     		bcc	.L32
+ 437              	.L29:
+  20:Src/hd44780.c **** 
+ 438              		.loc 1 20 0 is_stmt 1
+ 439 0034 03B0     		add	sp, sp, #12
+ 440              	.LCFI9:
+ 441              		.cfi_def_cfa_offset 12
+ 442              		@ sp needed
+ 443 0036 30BD     		pop	{r4, r5, pc}
+ARM GAS  /tmp/ccht7BbS.s 			page 12
+
+
+ 444              		.cfi_endproc
+ 445              	.LFE66:
+ 447              		.section	.text.LCD_WriteCMD,"ax",%progbits
+ 448              		.align	1
+ 449              		.global	LCD_WriteCMD
+ 450              		.syntax unified
+ 451              		.thumb
+ 452              		.thumb_func
+ 453              		.fpu softvfp
+ 455              	LCD_WriteCMD:
+ 456              	.LFB73:
+ 176:Src/hd44780.c **** 
+ 177:Src/hd44780.c **** LCD_RESULT LCD_WriteCMD(LCD_PCF8574_HandleTypeDef* handle, uint8_t cmd) {
+ 457              		.loc 1 177 0
+ 458              		.cfi_startproc
+ 459              		@ args = 0, pretend = 0, frame = 0
+ 460              		@ frame_needed = 0, uses_anonymous_args = 0
+ 461              	.LVL35:
+ 462 0000 38B5     		push	{r3, r4, r5, lr}
+ 463              	.LCFI10:
+ 464              		.cfi_def_cfa_offset 16
+ 465              		.cfi_offset 3, -16
+ 466              		.cfi_offset 4, -12
+ 467              		.cfi_offset 5, -8
+ 468              		.cfi_offset 14, -4
+ 178:Src/hd44780.c **** 	if (!LCDerrorFlag) {
+ 469              		.loc 1 178 0
+ 470 0002 184B     		ldr	r3, .L39
+ 471 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 472 0006 0BB1     		cbz	r3, .L38
+ 179:Src/hd44780.c **** 		LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 180:Src/hd44780.c **** 		LCD_StateWriteBit(handle, 0, LCD_PIN_RS);
+ 181:Src/hd44780.c **** 
+ 182:Src/hd44780.c **** 		LCD_WriteToDataBus(handle, cmd >> 4);
+ 183:Src/hd44780.c **** 		LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+ 184:Src/hd44780.c **** 		LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 185:Src/hd44780.c **** 
+ 186:Src/hd44780.c **** 		LCD_WriteToDataBus(handle, cmd);
+ 187:Src/hd44780.c **** 		LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+ 188:Src/hd44780.c **** 		LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 189:Src/hd44780.c **** 
+ 190:Src/hd44780.c **** 		LCD_WaitForBusyFlag(handle);
+ 191:Src/hd44780.c **** 
+ 192:Src/hd44780.c **** 		return LCD_OK;
+ 193:Src/hd44780.c **** 	} return LCD_ERROR;
+ 473              		.loc 1 193 0
+ 474 0008 0120     		movs	r0, #1
+ 475              	.LVL36:
+ 476              	.L35:
+ 194:Src/hd44780.c **** 
+ 195:Src/hd44780.c **** }
+ 477              		.loc 1 195 0
+ 478 000a 38BD     		pop	{r3, r4, r5, pc}
+ 479              	.LVL37:
+ 480              	.L38:
+ 481 000c 0D46     		mov	r5, r1
+ 482 000e 0446     		mov	r4, r0
+ARM GAS  /tmp/ccht7BbS.s 			page 13
+
+
+ 179:Src/hd44780.c **** 		LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 483              		.loc 1 179 0
+ 484 0010 0622     		movs	r2, #6
+ 485 0012 0021     		movs	r1, #0
+ 486              	.LVL38:
+ 487 0014 FFF7FEFF 		bl	LCD_StateWriteBit
+ 488              	.LVL39:
+ 180:Src/hd44780.c **** 
+ 489              		.loc 1 180 0
+ 490 0018 0422     		movs	r2, #4
+ 491 001a 0021     		movs	r1, #0
+ 492 001c 2046     		mov	r0, r4
+ 493 001e FFF7FEFF 		bl	LCD_StateWriteBit
+ 494              	.LVL40:
+ 182:Src/hd44780.c **** 		LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+ 495              		.loc 1 182 0
+ 496 0022 2909     		lsrs	r1, r5, #4
+ 497 0024 2046     		mov	r0, r4
+ 498 0026 FFF7FEFF 		bl	LCD_WriteToDataBus
+ 499              	.LVL41:
+ 183:Src/hd44780.c **** 		LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 500              		.loc 1 183 0
+ 501 002a 0622     		movs	r2, #6
+ 502 002c 0121     		movs	r1, #1
+ 503 002e 2046     		mov	r0, r4
+ 504 0030 FFF7FEFF 		bl	LCD_StateWriteBit
+ 505              	.LVL42:
+ 184:Src/hd44780.c **** 
+ 506              		.loc 1 184 0
+ 507 0034 0622     		movs	r2, #6
+ 508 0036 0021     		movs	r1, #0
+ 509 0038 2046     		mov	r0, r4
+ 510 003a FFF7FEFF 		bl	LCD_StateWriteBit
+ 511              	.LVL43:
+ 186:Src/hd44780.c **** 		LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+ 512              		.loc 1 186 0
+ 513 003e 2946     		mov	r1, r5
+ 514 0040 2046     		mov	r0, r4
+ 515 0042 FFF7FEFF 		bl	LCD_WriteToDataBus
+ 516              	.LVL44:
+ 187:Src/hd44780.c **** 		LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 517              		.loc 1 187 0
+ 518 0046 0622     		movs	r2, #6
+ 519 0048 0121     		movs	r1, #1
+ 520 004a 2046     		mov	r0, r4
+ 521 004c FFF7FEFF 		bl	LCD_StateWriteBit
+ 522              	.LVL45:
+ 188:Src/hd44780.c **** 
+ 523              		.loc 1 188 0
+ 524 0050 0622     		movs	r2, #6
+ 525 0052 0021     		movs	r1, #0
+ 526 0054 2046     		mov	r0, r4
+ 527 0056 FFF7FEFF 		bl	LCD_StateWriteBit
+ 528              	.LVL46:
+ 190:Src/hd44780.c **** 
+ 529              		.loc 1 190 0
+ 530 005a 2046     		mov	r0, r4
+ARM GAS  /tmp/ccht7BbS.s 			page 14
+
+
+ 531 005c FFF7FEFF 		bl	LCD_WaitForBusyFlag
+ 532              	.LVL47:
+ 192:Src/hd44780.c **** 	} return LCD_ERROR;
+ 533              		.loc 1 192 0
+ 534 0060 0020     		movs	r0, #0
+ 535 0062 D2E7     		b	.L35
+ 536              	.L40:
+ 537              		.align	2
+ 538              	.L39:
+ 539 0064 00000000 		.word	.LANCHOR0
+ 540              		.cfi_endproc
+ 541              	.LFE73:
+ 543              		.section	.text.LCD_WriteDATA,"ax",%progbits
+ 544              		.align	1
+ 545              		.global	LCD_WriteDATA
+ 546              		.syntax unified
+ 547              		.thumb
+ 548              		.thumb_func
+ 549              		.fpu softvfp
+ 551              	LCD_WriteDATA:
+ 552              	.LFB74:
+ 196:Src/hd44780.c **** 
+ 197:Src/hd44780.c **** LCD_RESULT LCD_WriteDATA(LCD_PCF8574_HandleTypeDef* handle, uint8_t data) {
+ 553              		.loc 1 197 0
+ 554              		.cfi_startproc
+ 555              		@ args = 0, pretend = 0, frame = 0
+ 556              		@ frame_needed = 0, uses_anonymous_args = 0
+ 557              	.LVL48:
+ 558 0000 38B5     		push	{r3, r4, r5, lr}
+ 559              	.LCFI11:
+ 560              		.cfi_def_cfa_offset 16
+ 561              		.cfi_offset 3, -16
+ 562              		.cfi_offset 4, -12
+ 563              		.cfi_offset 5, -8
+ 564              		.cfi_offset 14, -4
+ 565 0002 0446     		mov	r4, r0
+ 566 0004 0D46     		mov	r5, r1
+ 198:Src/hd44780.c **** 
+ 199:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 567              		.loc 1 199 0
+ 568 0006 0622     		movs	r2, #6
+ 569 0008 0021     		movs	r1, #0
+ 570              	.LVL49:
+ 571 000a FFF7FEFF 		bl	LCD_StateWriteBit
+ 572              	.LVL50:
+ 200:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 1, LCD_PIN_RS);
+ 573              		.loc 1 200 0
+ 574 000e 0422     		movs	r2, #4
+ 575 0010 0121     		movs	r1, #1
+ 576 0012 2046     		mov	r0, r4
+ 577 0014 FFF7FEFF 		bl	LCD_StateWriteBit
+ 578              	.LVL51:
+ 201:Src/hd44780.c **** 
+ 202:Src/hd44780.c **** 	LCD_WriteToDataBus(handle, data >> 4);
+ 579              		.loc 1 202 0
+ 580 0018 2909     		lsrs	r1, r5, #4
+ 581 001a 2046     		mov	r0, r4
+ARM GAS  /tmp/ccht7BbS.s 			page 15
+
+
+ 582 001c FFF7FEFF 		bl	LCD_WriteToDataBus
+ 583              	.LVL52:
+ 203:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+ 584              		.loc 1 203 0
+ 585 0020 0622     		movs	r2, #6
+ 586 0022 0121     		movs	r1, #1
+ 587 0024 2046     		mov	r0, r4
+ 588 0026 FFF7FEFF 		bl	LCD_StateWriteBit
+ 589              	.LVL53:
+ 204:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 590              		.loc 1 204 0
+ 591 002a 0622     		movs	r2, #6
+ 592 002c 0021     		movs	r1, #0
+ 593 002e 2046     		mov	r0, r4
+ 594 0030 FFF7FEFF 		bl	LCD_StateWriteBit
+ 595              	.LVL54:
+ 205:Src/hd44780.c **** 
+ 206:Src/hd44780.c **** 	LCD_WriteToDataBus(handle, data);
+ 596              		.loc 1 206 0
+ 597 0034 2946     		mov	r1, r5
+ 598 0036 2046     		mov	r0, r4
+ 599 0038 FFF7FEFF 		bl	LCD_WriteToDataBus
+ 600              	.LVL55:
+ 207:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 1, LCD_PIN_E);
+ 601              		.loc 1 207 0
+ 602 003c 0622     		movs	r2, #6
+ 603 003e 0121     		movs	r1, #1
+ 604 0040 2046     		mov	r0, r4
+ 605 0042 FFF7FEFF 		bl	LCD_StateWriteBit
+ 606              	.LVL56:
+ 208:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 607              		.loc 1 208 0
+ 608 0046 0622     		movs	r2, #6
+ 609 0048 0021     		movs	r1, #0
+ 610 004a 2046     		mov	r0, r4
+ 611 004c FFF7FEFF 		bl	LCD_StateWriteBit
+ 612              	.LVL57:
+ 209:Src/hd44780.c **** 
+ 210:Src/hd44780.c **** 	LCD_WaitForBusyFlag(handle);
+ 613              		.loc 1 210 0
+ 614 0050 2046     		mov	r0, r4
+ 615 0052 FFF7FEFF 		bl	LCD_WaitForBusyFlag
+ 616              	.LVL58:
+ 211:Src/hd44780.c **** 
+ 212:Src/hd44780.c **** 	return LCD_OK;
+ 213:Src/hd44780.c **** 
+ 214:Src/hd44780.c **** }
+ 617              		.loc 1 214 0
+ 618 0056 0020     		movs	r0, #0
+ 619 0058 38BD     		pop	{r3, r4, r5, pc}
+ 620              		.cfi_endproc
+ 621              	.LFE74:
+ 623              		.section	.text.LCD_SetLocation,"ax",%progbits
+ 624              		.align	1
+ 625              		.global	LCD_SetLocation
+ 626              		.syntax unified
+ 627              		.thumb
+ARM GAS  /tmp/ccht7BbS.s 			page 16
+
+
+ 628              		.thumb_func
+ 629              		.fpu softvfp
+ 631              	LCD_SetLocation:
+ 632              	.LFB75:
+ 215:Src/hd44780.c **** 
+ 216:Src/hd44780.c **** LCD_RESULT LCD_SetLocation(LCD_PCF8574_HandleTypeDef* handle, uint8_t x,
+ 217:Src/hd44780.c **** 		uint8_t y) {
+ 633              		.loc 1 217 0
+ 634              		.cfi_startproc
+ 635              		@ args = 0, pretend = 0, frame = 0
+ 636              		@ frame_needed = 0, uses_anonymous_args = 0
+ 637              	.LVL59:
+ 638 0000 08B5     		push	{r3, lr}
+ 639              	.LCFI12:
+ 640              		.cfi_def_cfa_offset 8
+ 641              		.cfi_offset 3, -8
+ 642              		.cfi_offset 14, -4
+ 218:Src/hd44780.c **** 	if (LCDerrorFlag) {return;}
+ 643              		.loc 1 218 0
+ 644 0002 064B     		ldr	r3, .L47
+ 645 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 646 0006 03B1     		cbz	r3, .L46
+ 647              	.LVL60:
+ 648              	.L43:
+ 219:Src/hd44780.c **** 
+ 220:Src/hd44780.c **** 	uint8_t add = 0x40 * y + x;
+ 221:Src/hd44780.c **** 	uint8_t cmd = 1 << 7;
+ 222:Src/hd44780.c **** 	cmd = cmd | add;
+ 223:Src/hd44780.c **** 	return LCD_WriteCMD(handle, cmd);
+ 224:Src/hd44780.c **** 
+ 225:Src/hd44780.c **** }
+ 649              		.loc 1 225 0
+ 650 0008 08BD     		pop	{r3, pc}
+ 651              	.LVL61:
+ 652              	.L46:
+ 220:Src/hd44780.c **** 	uint8_t cmd = 1 << 7;
+ 653              		.loc 1 220 0
+ 654 000a 9201     		lsls	r2, r2, #6
+ 655              	.LVL62:
+ 656 000c D2B2     		uxtb	r2, r2
+ 657 000e 1144     		add	r1, r1, r2
+ 658              	.LVL63:
+ 222:Src/hd44780.c **** 	return LCD_WriteCMD(handle, cmd);
+ 659              		.loc 1 222 0
+ 660 0010 61F07F01 		orn	r1, r1, #127
+ 661              	.LVL64:
+ 223:Src/hd44780.c **** 
+ 662              		.loc 1 223 0
+ 663 0014 C9B2     		uxtb	r1, r1
+ 664 0016 FFF7FEFF 		bl	LCD_WriteCMD
+ 665              	.LVL65:
+ 666 001a F5E7     		b	.L43
+ 667              	.L48:
+ 668              		.align	2
+ 669              	.L47:
+ 670 001c 00000000 		.word	.LANCHOR0
+ 671              		.cfi_endproc
+ARM GAS  /tmp/ccht7BbS.s 			page 17
+
+
+ 672              	.LFE75:
+ 674              		.section	.text.LCD_WriteString,"ax",%progbits
+ 675              		.align	1
+ 676              		.global	LCD_WriteString
+ 677              		.syntax unified
+ 678              		.thumb
+ 679              		.thumb_func
+ 680              		.fpu softvfp
+ 682              	LCD_WriteString:
+ 683              	.LFB76:
+ 226:Src/hd44780.c **** 
+ 227:Src/hd44780.c **** LCD_RESULT LCD_WriteString(LCD_PCF8574_HandleTypeDef* handle, char *s) {
+ 684              		.loc 1 227 0
+ 685              		.cfi_startproc
+ 686              		@ args = 0, pretend = 0, frame = 0
+ 687              		@ frame_needed = 0, uses_anonymous_args = 0
+ 688              	.LVL66:
+ 228:Src/hd44780.c **** 	if (LCDerrorFlag) {return;}
+ 689              		.loc 1 228 0
+ 690 0000 0D4B     		ldr	r3, .L60
+ 691 0002 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 692 0004 A3B9     		cbnz	r3, .L50
+ 693              	.LVL67:
+ 229:Src/hd44780.c **** 	int i = 0;
+ 230:Src/hd44780.c **** 
+ 231:Src/hd44780.c **** 	if (s != 0) {
+ 694              		.loc 1 231 0
+ 695 0006 A1B1     		cbz	r1, .L59
+ 227:Src/hd44780.c **** 	if (LCDerrorFlag) {return;}
+ 696              		.loc 1 227 0
+ 697 0008 70B5     		push	{r4, r5, r6, lr}
+ 698              	.LCFI13:
+ 699              		.cfi_def_cfa_offset 16
+ 700              		.cfi_offset 4, -16
+ 701              		.cfi_offset 5, -12
+ 702              		.cfi_offset 6, -8
+ 703              		.cfi_offset 14, -4
+ 704 000a 0D46     		mov	r5, r1
+ 705 000c 0646     		mov	r6, r0
+ 229:Src/hd44780.c **** 	int i = 0;
+ 706              		.loc 1 229 0
+ 707 000e 0024     		movs	r4, #0
+ 708 0010 07E0     		b	.L51
+ 709              	.LVL68:
+ 710              	.L53:
+ 232:Src/hd44780.c **** 
+ 233:Src/hd44780.c **** 		while (i < 80 && s[i] != 0) {
+ 234:Src/hd44780.c **** 			LCD_WaitForBusyFlag(handle);
+ 711              		.loc 1 234 0
+ 712 0012 3046     		mov	r0, r6
+ 713 0014 FFF7FEFF 		bl	LCD_WaitForBusyFlag
+ 714              	.LVL69:
+ 235:Src/hd44780.c **** 			LCD_WriteDATA(handle, s[i]);
+ 715              		.loc 1 235 0
+ 716 0018 295D     		ldrb	r1, [r5, r4]	@ zero_extendqisi2
+ 717 001a 3046     		mov	r0, r6
+ 718 001c FFF7FEFF 		bl	LCD_WriteDATA
+ARM GAS  /tmp/ccht7BbS.s 			page 18
+
+
+ 719              	.LVL70:
+ 236:Src/hd44780.c **** 			i++;
+ 720              		.loc 1 236 0
+ 721 0020 0134     		adds	r4, r4, #1
+ 722              	.LVL71:
+ 723              	.L51:
+ 233:Src/hd44780.c **** 			LCD_WaitForBusyFlag(handle);
+ 724              		.loc 1 233 0
+ 725 0022 4F2C     		cmp	r4, #79
+ 726 0024 02DC     		bgt	.L52
+ 233:Src/hd44780.c **** 			LCD_WaitForBusyFlag(handle);
+ 727              		.loc 1 233 0 is_stmt 0 discriminator 1
+ 728 0026 2B5D     		ldrb	r3, [r5, r4]	@ zero_extendqisi2
+ 729 0028 002B     		cmp	r3, #0
+ 730 002a F2D1     		bne	.L53
+ 731              	.L52:
+ 237:Src/hd44780.c **** 		}
+ 238:Src/hd44780.c **** 	}
+ 239:Src/hd44780.c **** 	return LCD_OK;
+ 732              		.loc 1 239 0 is_stmt 1
+ 733 002c 0020     		movs	r0, #0
+ 240:Src/hd44780.c **** }
+ 734              		.loc 1 240 0
+ 735 002e 70BD     		pop	{r4, r5, r6, pc}
+ 736              	.LVL72:
+ 737              	.L50:
+ 738              	.LCFI14:
+ 739              		.cfi_def_cfa_offset 0
+ 740              		.cfi_restore 4
+ 741              		.cfi_restore 5
+ 742              		.cfi_restore 6
+ 743              		.cfi_restore 14
+ 744              	.LVL73:
+ 228:Src/hd44780.c **** 	int i = 0;
+ 745              		.loc 1 228 0
+ 746 0030 7047     		bx	lr
+ 747              	.LVL74:
+ 748              	.L59:
+ 239:Src/hd44780.c **** }
+ 749              		.loc 1 239 0
+ 750 0032 0020     		movs	r0, #0
+ 751              	.LVL75:
+ 752              		.loc 1 240 0
+ 753 0034 7047     		bx	lr
+ 754              	.L61:
+ 755 0036 00BF     		.align	2
+ 756              	.L60:
+ 757 0038 00000000 		.word	.LANCHOR0
+ 758              		.cfi_endproc
+ 759              	.LFE76:
+ 761              		.section	.text.LCD_ClearDisplay,"ax",%progbits
+ 762              		.align	1
+ 763              		.global	LCD_ClearDisplay
+ 764              		.syntax unified
+ 765              		.thumb
+ 766              		.thumb_func
+ 767              		.fpu softvfp
+ARM GAS  /tmp/ccht7BbS.s 			page 19
+
+
+ 769              	LCD_ClearDisplay:
+ 770              	.LFB77:
+ 241:Src/hd44780.c **** 
+ 242:Src/hd44780.c **** LCD_RESULT LCD_ClearDisplay(LCD_PCF8574_HandleTypeDef* handle) {
+ 771              		.loc 1 242 0
+ 772              		.cfi_startproc
+ 773              		@ args = 0, pretend = 0, frame = 0
+ 774              		@ frame_needed = 0, uses_anonymous_args = 0
+ 775              	.LVL76:
+ 776 0000 08B5     		push	{r3, lr}
+ 777              	.LCFI15:
+ 778              		.cfi_def_cfa_offset 8
+ 779              		.cfi_offset 3, -8
+ 780              		.cfi_offset 14, -4
+ 243:Src/hd44780.c **** 	if (LCDerrorFlag) {return;}
+ 781              		.loc 1 243 0
+ 782 0002 044B     		ldr	r3, .L66
+ 783 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 784 0006 03B1     		cbz	r3, .L65
+ 785              	.LVL77:
+ 786              	.L62:
+ 244:Src/hd44780.c **** 	return LCD_WriteCMD(handle, 1);
+ 245:Src/hd44780.c **** }
+ 787              		.loc 1 245 0
+ 788 0008 08BD     		pop	{r3, pc}
+ 789              	.LVL78:
+ 790              	.L65:
+ 244:Src/hd44780.c **** 	return LCD_WriteCMD(handle, 1);
+ 791              		.loc 1 244 0
+ 792 000a 0121     		movs	r1, #1
+ 793 000c FFF7FEFF 		bl	LCD_WriteCMD
+ 794              	.LVL79:
+ 795 0010 FAE7     		b	.L62
+ 796              	.L67:
+ 797 0012 00BF     		.align	2
+ 798              	.L66:
+ 799 0014 00000000 		.word	.LANCHOR0
+ 800              		.cfi_endproc
+ 801              	.LFE77:
+ 803              		.section	.text.LCD_DisplayON,"ax",%progbits
+ 804              		.align	1
+ 805              		.global	LCD_DisplayON
+ 806              		.syntax unified
+ 807              		.thumb
+ 808              		.thumb_func
+ 809              		.fpu softvfp
+ 811              	LCD_DisplayON:
+ 812              	.LFB78:
+ 246:Src/hd44780.c **** 
+ 247:Src/hd44780.c **** LCD_RESULT LCD_DisplayON(LCD_PCF8574_HandleTypeDef* handle) {
+ 813              		.loc 1 247 0
+ 814              		.cfi_startproc
+ 815              		@ args = 0, pretend = 0, frame = 0
+ 816              		@ frame_needed = 0, uses_anonymous_args = 0
+ 817              	.LVL80:
+ 818 0000 08B5     		push	{r3, lr}
+ 819              	.LCFI16:
+ARM GAS  /tmp/ccht7BbS.s 			page 20
+
+
+ 820              		.cfi_def_cfa_offset 8
+ 821              		.cfi_offset 3, -8
+ 822              		.cfi_offset 14, -4
+ 248:Src/hd44780.c **** 	handle->D = 1;
+ 823              		.loc 1 248 0
+ 824 0002 0123     		movs	r3, #1
+ 825 0004 4370     		strb	r3, [r0, #1]
+ 826              	.LVL81:
+ 249:Src/hd44780.c **** 	uint8_t cmd = 0;
+ 250:Src/hd44780.c **** 	cmd = cmd | (1 << 3);
+ 251:Src/hd44780.c **** 	cmd = cmd | (handle->D << 2);
+ 252:Src/hd44780.c **** 	cmd = cmd | (handle->C << 1);
+ 827              		.loc 1 252 0
+ 828 0006 8378     		ldrb	r3, [r0, #2]	@ zero_extendqisi2
+ 829 0008 5B00     		lsls	r3, r3, #1
+ 830 000a 43F00C03 		orr	r3, r3, #12
+ 831 000e 03F0FE03 		and	r3, r3, #254
+ 832              	.LVL82:
+ 253:Src/hd44780.c **** 	cmd = cmd | handle->B;
+ 833              		.loc 1 253 0
+ 834 0012 C178     		ldrb	r1, [r0, #3]	@ zero_extendqisi2
+ 835              	.LVL83:
+ 254:Src/hd44780.c **** 	return LCD_WriteCMD(handle, cmd);
+ 836              		.loc 1 254 0
+ 837 0014 1943     		orrs	r1, r1, r3
+ 838              	.LVL84:
+ 839 0016 FFF7FEFF 		bl	LCD_WriteCMD
+ 840              	.LVL85:
+ 255:Src/hd44780.c **** }
+ 841              		.loc 1 255 0
+ 842 001a 08BD     		pop	{r3, pc}
+ 843              		.cfi_endproc
+ 844              	.LFE78:
+ 846              		.section	.text.LCD_DisplayOFF,"ax",%progbits
+ 847              		.align	1
+ 848              		.global	LCD_DisplayOFF
+ 849              		.syntax unified
+ 850              		.thumb
+ 851              		.thumb_func
+ 852              		.fpu softvfp
+ 854              	LCD_DisplayOFF:
+ 855              	.LFB79:
+ 256:Src/hd44780.c **** 
+ 257:Src/hd44780.c **** LCD_RESULT LCD_DisplayOFF(LCD_PCF8574_HandleTypeDef* handle) {
+ 856              		.loc 1 257 0
+ 857              		.cfi_startproc
+ 858              		@ args = 0, pretend = 0, frame = 0
+ 859              		@ frame_needed = 0, uses_anonymous_args = 0
+ 860              	.LVL86:
+ 861 0000 08B5     		push	{r3, lr}
+ 862              	.LCFI17:
+ 863              		.cfi_def_cfa_offset 8
+ 864              		.cfi_offset 3, -8
+ 865              		.cfi_offset 14, -4
+ 258:Src/hd44780.c **** 	handle->D = 0;
+ 866              		.loc 1 258 0
+ 867 0002 0023     		movs	r3, #0
+ARM GAS  /tmp/ccht7BbS.s 			page 21
+
+
+ 868 0004 4370     		strb	r3, [r0, #1]
+ 869              	.LVL87:
+ 259:Src/hd44780.c **** 	uint8_t cmd = 0;
+ 260:Src/hd44780.c **** 	cmd = cmd | (1 << 3);
+ 261:Src/hd44780.c **** 	cmd = cmd | (handle->D << 2);
+ 262:Src/hd44780.c **** 	cmd = cmd | (handle->C << 1);
+ 870              		.loc 1 262 0
+ 871 0006 8378     		ldrb	r3, [r0, #2]	@ zero_extendqisi2
+ 872 0008 5B00     		lsls	r3, r3, #1
+ 873 000a 43F00803 		orr	r3, r3, #8
+ 874 000e 03F0FE03 		and	r3, r3, #254
+ 875              	.LVL88:
+ 263:Src/hd44780.c **** 	cmd = cmd | handle->B;
+ 876              		.loc 1 263 0
+ 877 0012 C178     		ldrb	r1, [r0, #3]	@ zero_extendqisi2
+ 878              	.LVL89:
+ 264:Src/hd44780.c **** 	return LCD_WriteCMD(handle, cmd);
+ 879              		.loc 1 264 0
+ 880 0014 1943     		orrs	r1, r1, r3
+ 881              	.LVL90:
+ 882 0016 FFF7FEFF 		bl	LCD_WriteCMD
+ 883              	.LVL91:
+ 265:Src/hd44780.c **** }
+ 884              		.loc 1 265 0
+ 885 001a 08BD     		pop	{r3, pc}
+ 886              		.cfi_endproc
+ 887              	.LFE79:
+ 889              		.section	.text.LCD_CursorON,"ax",%progbits
+ 890              		.align	1
+ 891              		.global	LCD_CursorON
+ 892              		.syntax unified
+ 893              		.thumb
+ 894              		.thumb_func
+ 895              		.fpu softvfp
+ 897              	LCD_CursorON:
+ 898              	.LFB80:
+ 266:Src/hd44780.c **** 
+ 267:Src/hd44780.c **** LCD_RESULT LCD_CursorON(LCD_PCF8574_HandleTypeDef* handle, uint8_t blink) {
+ 899              		.loc 1 267 0
+ 900              		.cfi_startproc
+ 901              		@ args = 0, pretend = 0, frame = 0
+ 902              		@ frame_needed = 0, uses_anonymous_args = 0
+ 903              	.LVL92:
+ 904 0000 08B5     		push	{r3, lr}
+ 905              	.LCFI18:
+ 906              		.cfi_def_cfa_offset 8
+ 907              		.cfi_offset 3, -8
+ 908              		.cfi_offset 14, -4
+ 268:Src/hd44780.c **** 	handle->C = 1;
+ 909              		.loc 1 268 0
+ 910 0002 0122     		movs	r2, #1
+ 911 0004 8270     		strb	r2, [r0, #2]
+ 269:Src/hd44780.c **** 	blink &= 1;
+ 912              		.loc 1 269 0
+ 913 0006 1140     		ands	r1, r1, r2
+ 914              	.LVL93:
+ 270:Src/hd44780.c **** 	handle->B = blink;
+ARM GAS  /tmp/ccht7BbS.s 			page 22
+
+
+ 915              		.loc 1 270 0
+ 916 0008 C170     		strb	r1, [r0, #3]
+ 917              	.LVL94:
+ 271:Src/hd44780.c **** 	uint8_t cmd = 0;
+ 272:Src/hd44780.c **** 	cmd = cmd | (1 << 3);
+ 273:Src/hd44780.c **** 	cmd = cmd | (handle->D << 2);
+ 918              		.loc 1 273 0
+ 919 000a 4378     		ldrb	r3, [r0, #1]	@ zero_extendqisi2
+ 920 000c 9B00     		lsls	r3, r3, #2
+ 921 000e 43F00803 		orr	r3, r3, #8
+ 922 0012 5BB2     		sxtb	r3, r3
+ 923              	.LVL95:
+ 274:Src/hd44780.c **** 	cmd = cmd | (handle->C << 1);
+ 924              		.loc 1 274 0
+ 925 0014 43F00203 		orr	r3, r3, #2
+ 926              	.LVL96:
+ 927 0018 DBB2     		uxtb	r3, r3
+ 928              	.LVL97:
+ 275:Src/hd44780.c **** 	cmd = cmd | handle->B;
+ 276:Src/hd44780.c **** 	return LCD_WriteCMD(handle, cmd);
+ 929              		.loc 1 276 0
+ 930 001a 1943     		orrs	r1, r1, r3
+ 931              	.LVL98:
+ 932 001c FFF7FEFF 		bl	LCD_WriteCMD
+ 933              	.LVL99:
+ 277:Src/hd44780.c **** }
+ 934              		.loc 1 277 0
+ 935 0020 08BD     		pop	{r3, pc}
+ 936              		.cfi_endproc
+ 937              	.LFE80:
+ 939              		.section	.text.LCD_CursorOFF,"ax",%progbits
+ 940              		.align	1
+ 941              		.global	LCD_CursorOFF
+ 942              		.syntax unified
+ 943              		.thumb
+ 944              		.thumb_func
+ 945              		.fpu softvfp
+ 947              	LCD_CursorOFF:
+ 948              	.LFB81:
+ 278:Src/hd44780.c **** 
+ 279:Src/hd44780.c **** LCD_RESULT LCD_CursorOFF(LCD_PCF8574_HandleTypeDef* handle) {
+ 949              		.loc 1 279 0
+ 950              		.cfi_startproc
+ 951              		@ args = 0, pretend = 0, frame = 0
+ 952              		@ frame_needed = 0, uses_anonymous_args = 0
+ 953              	.LVL100:
+ 954 0000 08B5     		push	{r3, lr}
+ 955              	.LCFI19:
+ 956              		.cfi_def_cfa_offset 8
+ 957              		.cfi_offset 3, -8
+ 958              		.cfi_offset 14, -4
+ 280:Src/hd44780.c **** 	handle->C = 0;
+ 959              		.loc 1 280 0
+ 960 0002 0023     		movs	r3, #0
+ 961 0004 8370     		strb	r3, [r0, #2]
+ 962              	.LVL101:
+ 281:Src/hd44780.c **** 	uint8_t cmd = 0;
+ARM GAS  /tmp/ccht7BbS.s 			page 23
+
+
+ 282:Src/hd44780.c **** 	cmd = cmd | (1 << 3);
+ 283:Src/hd44780.c **** 	cmd = cmd | (handle->D << 2);
+ 963              		.loc 1 283 0
+ 964 0006 4378     		ldrb	r3, [r0, #1]	@ zero_extendqisi2
+ 965 0008 9B00     		lsls	r3, r3, #2
+ 966 000a 43F00803 		orr	r3, r3, #8
+ 967 000e 03F0FC03 		and	r3, r3, #252
+ 968              	.LVL102:
+ 284:Src/hd44780.c **** 	cmd = cmd | (handle->C << 1);
+ 285:Src/hd44780.c **** 	cmd = cmd | handle->B;
+ 969              		.loc 1 285 0
+ 970 0012 C178     		ldrb	r1, [r0, #3]	@ zero_extendqisi2
+ 971              	.LVL103:
+ 286:Src/hd44780.c **** 	return LCD_WriteCMD(handle, cmd);
+ 972              		.loc 1 286 0
+ 973 0014 1943     		orrs	r1, r1, r3
+ 974              	.LVL104:
+ 975 0016 FFF7FEFF 		bl	LCD_WriteCMD
+ 976              	.LVL105:
+ 287:Src/hd44780.c **** }
+ 977              		.loc 1 287 0
+ 978 001a 08BD     		pop	{r3, pc}
+ 979              		.cfi_endproc
+ 980              	.LFE81:
+ 982              		.section	.text.LCD_ShiftCursor,"ax",%progbits
+ 983              		.align	1
+ 984              		.global	LCD_ShiftCursor
+ 985              		.syntax unified
+ 986              		.thumb
+ 987              		.thumb_func
+ 988              		.fpu softvfp
+ 990              	LCD_ShiftCursor:
+ 991              	.LFB82:
+ 288:Src/hd44780.c **** 
+ 289:Src/hd44780.c **** LCD_RESULT LCD_ShiftCursor(LCD_PCF8574_HandleTypeDef* handle, uint8_t direction,
+ 290:Src/hd44780.c **** 		uint8_t steps) {
+ 992              		.loc 1 290 0
+ 993              		.cfi_startproc
+ 994              		@ args = 0, pretend = 0, frame = 0
+ 995              		@ frame_needed = 0, uses_anonymous_args = 0
+ 996              	.LVL106:
+ 997 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 998              	.LCFI20:
+ 999              		.cfi_def_cfa_offset 24
+ 1000              		.cfi_offset 3, -24
+ 1001              		.cfi_offset 4, -20
+ 1002              		.cfi_offset 5, -16
+ 1003              		.cfi_offset 6, -12
+ 1004              		.cfi_offset 7, -8
+ 1005              		.cfi_offset 14, -4
+ 1006 0002 0746     		mov	r7, r0
+ 1007 0004 1646     		mov	r6, r2
+ 291:Src/hd44780.c **** 	direction &= 1;
+ 1008              		.loc 1 291 0
+ 1009 0006 01F00105 		and	r5, r1, #1
+ 1010              	.LVL107:
+ 292:Src/hd44780.c **** 
+ARM GAS  /tmp/ccht7BbS.s 			page 24
+
+
+ 293:Src/hd44780.c **** 	uint8_t cmd = 0;
+ 294:Src/hd44780.c **** 	cmd |= 1 << 4;
+ 295:Src/hd44780.c **** 	cmd |= direction << 2;
+ 1011              		.loc 1 295 0
+ 1012 000a AD00     		lsls	r5, r5, #2
+ 1013              	.LVL108:
+ 1014 000c 45F01005 		orr	r5, r5, #16
+ 1015              	.LVL109:
+ 296:Src/hd44780.c **** 
+ 297:Src/hd44780.c **** 	int i = 0;
+ 298:Src/hd44780.c **** 	for (i = 0; i < steps; i++) {
+ 1016              		.loc 1 298 0
+ 1017 0010 0024     		movs	r4, #0
+ 1018              	.LVL110:
+ 1019              	.L77:
+ 1020              		.loc 1 298 0 is_stmt 0 discriminator 1
+ 1021 0012 A642     		cmp	r6, r4
+ 1022 0014 06DD     		ble	.L82
+ 299:Src/hd44780.c **** 		if (LCD_WriteCMD(handle, cmd) != LCD_OK) {
+ 1023              		.loc 1 299 0 is_stmt 1
+ 1024 0016 2946     		mov	r1, r5
+ 1025 0018 3846     		mov	r0, r7
+ 1026 001a FFF7FEFF 		bl	LCD_WriteCMD
+ 1027              	.LVL111:
+ 1028 001e 18B9     		cbnz	r0, .L80
+ 298:Src/hd44780.c **** 		if (LCD_WriteCMD(handle, cmd) != LCD_OK) {
+ 1029              		.loc 1 298 0 discriminator 2
+ 1030 0020 0134     		adds	r4, r4, #1
+ 1031              	.LVL112:
+ 1032 0022 F6E7     		b	.L77
+ 1033              	.L82:
+ 300:Src/hd44780.c **** 			//handle->errorCallback(LCD_ERROR);
+ 301:Src/hd44780.c **** 			return LCD_ERROR;
+ 302:Src/hd44780.c **** 		}
+ 303:Src/hd44780.c **** 	}
+ 304:Src/hd44780.c **** 	return LCD_OK;
+ 1034              		.loc 1 304 0
+ 1035 0024 0020     		movs	r0, #0
+ 1036              	.L78:
+ 305:Src/hd44780.c **** }
+ 1037              		.loc 1 305 0
+ 1038 0026 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 1039              	.LVL113:
+ 1040              	.L80:
+ 301:Src/hd44780.c **** 		}
+ 1041              		.loc 1 301 0
+ 1042 0028 0120     		movs	r0, #1
+ 1043 002a FCE7     		b	.L78
+ 1044              		.cfi_endproc
+ 1045              	.LFE82:
+ 1047              		.section	.text.LCD_ShiftDisplay,"ax",%progbits
+ 1048              		.align	1
+ 1049              		.global	LCD_ShiftDisplay
+ 1050              		.syntax unified
+ 1051              		.thumb
+ 1052              		.thumb_func
+ 1053              		.fpu softvfp
+ARM GAS  /tmp/ccht7BbS.s 			page 25
+
+
+ 1055              	LCD_ShiftDisplay:
+ 1056              	.LFB83:
+ 306:Src/hd44780.c **** 
+ 307:Src/hd44780.c **** LCD_RESULT LCD_ShiftDisplay(LCD_PCF8574_HandleTypeDef* handle,
+ 308:Src/hd44780.c **** 		uint8_t direction, uint8_t steps) {
+ 1057              		.loc 1 308 0
+ 1058              		.cfi_startproc
+ 1059              		@ args = 0, pretend = 0, frame = 0
+ 1060              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1061              	.LVL114:
+ 1062 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 1063              	.LCFI21:
+ 1064              		.cfi_def_cfa_offset 24
+ 1065              		.cfi_offset 3, -24
+ 1066              		.cfi_offset 4, -20
+ 1067              		.cfi_offset 5, -16
+ 1068              		.cfi_offset 6, -12
+ 1069              		.cfi_offset 7, -8
+ 1070              		.cfi_offset 14, -4
+ 1071 0002 0746     		mov	r7, r0
+ 1072 0004 1646     		mov	r6, r2
+ 309:Src/hd44780.c **** 	direction &= 1;
+ 1073              		.loc 1 309 0
+ 1074 0006 01F00105 		and	r5, r1, #1
+ 1075              	.LVL115:
+ 310:Src/hd44780.c **** 
+ 311:Src/hd44780.c **** 	uint8_t cmd = 0;
+ 312:Src/hd44780.c **** 	cmd |= 1 << 4;
+ 313:Src/hd44780.c **** 	cmd |= 1 << 3;
+ 314:Src/hd44780.c **** 	cmd |= direction << 2;
+ 1076              		.loc 1 314 0
+ 1077 000a AD00     		lsls	r5, r5, #2
+ 1078              	.LVL116:
+ 1079 000c 45F01805 		orr	r5, r5, #24
+ 1080              	.LVL117:
+ 315:Src/hd44780.c **** 
+ 316:Src/hd44780.c **** 	int i = 0;
+ 317:Src/hd44780.c **** 	for (i = 0; i < steps; i++) {
+ 1081              		.loc 1 317 0
+ 1082 0010 0024     		movs	r4, #0
+ 1083              	.LVL118:
+ 1084              	.L84:
+ 1085              		.loc 1 317 0 is_stmt 0 discriminator 1
+ 1086 0012 A642     		cmp	r6, r4
+ 1087 0014 06DD     		ble	.L89
+ 318:Src/hd44780.c **** 		if (LCD_WriteCMD(handle, cmd) != LCD_OK) {
+ 1088              		.loc 1 318 0 is_stmt 1
+ 1089 0016 2946     		mov	r1, r5
+ 1090 0018 3846     		mov	r0, r7
+ 1091 001a FFF7FEFF 		bl	LCD_WriteCMD
+ 1092              	.LVL119:
+ 1093 001e 18B9     		cbnz	r0, .L87
+ 317:Src/hd44780.c **** 		if (LCD_WriteCMD(handle, cmd) != LCD_OK) {
+ 1094              		.loc 1 317 0 discriminator 2
+ 1095 0020 0134     		adds	r4, r4, #1
+ 1096              	.LVL120:
+ 1097 0022 F6E7     		b	.L84
+ARM GAS  /tmp/ccht7BbS.s 			page 26
+
+
+ 1098              	.L89:
+ 319:Src/hd44780.c **** 			//handle->errorCallback(LCD_ERROR);
+ 320:Src/hd44780.c **** 			return LCD_ERROR;
+ 321:Src/hd44780.c **** 		}
+ 322:Src/hd44780.c **** 	}
+ 323:Src/hd44780.c **** 	return LCD_OK;
+ 1099              		.loc 1 323 0
+ 1100 0024 0020     		movs	r0, #0
+ 1101              	.L85:
+ 324:Src/hd44780.c **** }
+ 1102              		.loc 1 324 0
+ 1103 0026 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 1104              	.LVL121:
+ 1105              	.L87:
+ 320:Src/hd44780.c **** 		}
+ 1106              		.loc 1 320 0
+ 1107 0028 0120     		movs	r0, #1
+ 1108 002a FCE7     		b	.L85
+ 1109              		.cfi_endproc
+ 1110              	.LFE83:
+ 1112              		.section	.text.LCD_WriteNumber,"ax",%progbits
+ 1113              		.align	1
+ 1114              		.global	LCD_WriteNumber
+ 1115              		.syntax unified
+ 1116              		.thumb
+ 1117              		.thumb_func
+ 1118              		.fpu softvfp
+ 1120              	LCD_WriteNumber:
+ 1121              	.LFB84:
+ 325:Src/hd44780.c **** 
+ 326:Src/hd44780.c **** LCD_RESULT LCD_WriteNumber(LCD_PCF8574_HandleTypeDef* handle, unsigned long n,
+ 327:Src/hd44780.c **** 		uint8_t base) {
+ 1122              		.loc 1 327 0
+ 1123              		.cfi_startproc
+ 1124              		@ args = 0, pretend = 0, frame = 40
+ 1125              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1126              	.LVL122:
+ 328:Src/hd44780.c **** 	if (LCDerrorFlag) {return;}
+ 1127              		.loc 1 328 0
+ 1128 0000 124B     		ldr	r3, .L103
+ 1129 0002 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1130 0004 0BBB     		cbnz	r3, .L91
+ 327:Src/hd44780.c **** 	if (LCDerrorFlag) {return;}
+ 1131              		.loc 1 327 0
+ 1132 0006 70B5     		push	{r4, r5, r6, lr}
+ 1133              	.LCFI22:
+ 1134              		.cfi_def_cfa_offset 16
+ 1135              		.cfi_offset 4, -16
+ 1136              		.cfi_offset 5, -12
+ 1137              		.cfi_offset 6, -8
+ 1138              		.cfi_offset 14, -4
+ 1139 0008 8AB0     		sub	sp, sp, #40
+ 1140              	.LCFI23:
+ 1141              		.cfi_def_cfa_offset 56
+ 1142              	.LVL123:
+ 329:Src/hd44780.c **** 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
+ 330:Src/hd44780.c **** 	char *str = &buf[sizeof(buf) - 1];
+ARM GAS  /tmp/ccht7BbS.s 			page 27
+
+
+ 331:Src/hd44780.c **** 
+ 332:Src/hd44780.c **** 	*str = '\0';
+ 1143              		.loc 1 332 0
+ 1144 000a 8DF82430 		strb	r3, [sp, #36]
+ 333:Src/hd44780.c **** 
+ 334:Src/hd44780.c **** 	// prevent crash if called with base == 1
+ 335:Src/hd44780.c **** 	if (base < 2)
+ 1145              		.loc 1 335 0
+ 1146 000e 012A     		cmp	r2, #1
+ 1147 0010 01D9     		bls	.L101
+ 1148              	.LVL124:
+ 1149              	.L92:
+ 336:Src/hd44780.c **** 		base = 10;
+ 1150              		.loc 1 336 0
+ 1151 0012 09AE     		add	r6, sp, #36
+ 1152              	.LVL125:
+ 1153 0014 07E0     		b	.L95
+ 1154              	.LVL126:
+ 1155              	.L101:
+ 1156 0016 0A22     		movs	r2, #10
+ 1157              	.LVL127:
+ 1158 0018 FBE7     		b	.L92
+ 1159              	.LVL128:
+ 1160              	.L93:
+ 1161              	.LBB2:
+ 337:Src/hd44780.c **** 
+ 338:Src/hd44780.c **** 	do {
+ 339:Src/hd44780.c **** 		unsigned long m = n;
+ 340:Src/hd44780.c **** 		n /= base;
+ 341:Src/hd44780.c **** 		char c = m - base * n;
+ 342:Src/hd44780.c **** 		*--str = c < 10 ? c + '0' : c + 'A' - 10;
+ 1162              		.loc 1 342 0 discriminator 2
+ 1163 001a 3733     		adds	r3, r3, #55
+ 1164              	.LVL129:
+ 1165 001c DBB2     		uxtb	r3, r3
+ 1166              	.LVL130:
+ 1167              	.L94:
+ 1168              		.loc 1 342 0 is_stmt 0 discriminator 4
+ 1169 001e 06F8013D 		strb	r3, [r6, #-1]!
+ 1170              	.LVL131:
+ 340:Src/hd44780.c **** 		char c = m - base * n;
+ 1171              		.loc 1 340 0 is_stmt 1 discriminator 4
+ 1172 0022 2146     		mov	r1, r4
+ 1173              	.LVL132:
+ 1174              	.LBE2:
+ 343:Src/hd44780.c **** 	} while (n);
+ 1175              		.loc 1 343 0 discriminator 4
+ 1176 0024 64B1     		cbz	r4, .L102
+ 1177              	.LVL133:
+ 1178              	.L95:
+ 1179              	.LBB3:
+ 340:Src/hd44780.c **** 		char c = m - base * n;
+ 1180              		.loc 1 340 0
+ 1181 0026 B1FBF2F4 		udiv	r4, r1, r2
+ 1182              	.LVL134:
+ 341:Src/hd44780.c **** 		*--str = c < 10 ? c + '0' : c + 'A' - 10;
+ 1183              		.loc 1 341 0
+ARM GAS  /tmp/ccht7BbS.s 			page 28
+
+
+ 1184 002a CBB2     		uxtb	r3, r1
+ 1185 002c 04FB02F5 		mul	r5, r4, r2
+ 1186 0030 EDB2     		uxtb	r5, r5
+ 1187 0032 5B1B     		subs	r3, r3, r5
+ 1188 0034 DBB2     		uxtb	r3, r3
+ 1189              	.LVL135:
+ 342:Src/hd44780.c **** 	} while (n);
+ 1190              		.loc 1 342 0
+ 1191 0036 092B     		cmp	r3, #9
+ 1192 0038 EFD8     		bhi	.L93
+ 342:Src/hd44780.c **** 	} while (n);
+ 1193              		.loc 1 342 0 is_stmt 0 discriminator 1
+ 1194 003a 3033     		adds	r3, r3, #48
+ 1195              	.LVL136:
+ 1196 003c DBB2     		uxtb	r3, r3
+ 1197              	.LVL137:
+ 1198 003e EEE7     		b	.L94
+ 1199              	.LVL138:
+ 1200              	.L102:
+ 1201              	.LBE3:
+ 344:Src/hd44780.c **** 	return LCD_WriteString(handle, str);
+ 1202              		.loc 1 344 0 is_stmt 1
+ 1203 0040 3146     		mov	r1, r6
+ 1204              	.LVL139:
+ 1205 0042 FFF7FEFF 		bl	LCD_WriteString
+ 1206              	.LVL140:
+ 345:Src/hd44780.c **** }
+ 1207              		.loc 1 345 0
+ 1208 0046 0AB0     		add	sp, sp, #40
+ 1209              	.LCFI24:
+ 1210              		.cfi_def_cfa_offset 16
+ 1211              		@ sp needed
+ 1212 0048 70BD     		pop	{r4, r5, r6, pc}
+ 1213              	.LVL141:
+ 1214              	.L91:
+ 1215              	.LCFI25:
+ 1216              		.cfi_def_cfa_offset 0
+ 1217              		.cfi_restore 4
+ 1218              		.cfi_restore 5
+ 1219              		.cfi_restore 6
+ 1220              		.cfi_restore 14
+ 1221              	.LVL142:
+ 1222 004a 7047     		bx	lr
+ 1223              	.L104:
+ 1224              		.align	2
+ 1225              	.L103:
+ 1226 004c 00000000 		.word	.LANCHOR0
+ 1227              		.cfi_endproc
+ 1228              	.LFE84:
+ 1230              		.global	__aeabi_dcmplt
+ 1231              		.global	__aeabi_ddiv
+ 1232              		.global	__aeabi_dadd
+ 1233              		.global	__aeabi_d2uiz
+ 1234              		.global	__aeabi_ui2d
+ 1235              		.global	__aeabi_dsub
+ 1236              		.global	__aeabi_dmul
+ 1237              		.global	__aeabi_d2iz
+ARM GAS  /tmp/ccht7BbS.s 			page 29
+
+
+ 1238              		.global	__aeabi_i2d
+ 1239              		.section	.text.LCD_WriteFloat,"ax",%progbits
+ 1240              		.align	1
+ 1241              		.global	LCD_WriteFloat
+ 1242              		.syntax unified
+ 1243              		.thumb
+ 1244              		.thumb_func
+ 1245              		.fpu softvfp
+ 1247              	LCD_WriteFloat:
+ 1248              	.LFB85:
+ 346:Src/hd44780.c **** 
+ 347:Src/hd44780.c **** LCD_RESULT LCD_WriteFloat(LCD_PCF8574_HandleTypeDef* handle, double number,
+ 348:Src/hd44780.c **** 		uint8_t digits) {
+ 1249              		.loc 1 348 0
+ 1250              		.cfi_startproc
+ 1251              		@ args = 4, pretend = 0, frame = 0
+ 1252              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1253              	.LVL143:
+ 1254 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 1255              	.LCFI26:
+ 1256              		.cfi_def_cfa_offset 24
+ 1257              		.cfi_offset 4, -24
+ 1258              		.cfi_offset 5, -20
+ 1259              		.cfi_offset 6, -16
+ 1260              		.cfi_offset 7, -12
+ 1261              		.cfi_offset 8, -8
+ 1262              		.cfi_offset 14, -4
+ 1263 0004 1E46     		mov	r6, r3
+ 1264 0006 9DF81850 		ldrb	r5, [sp, #24]	@ zero_extendqisi2
+ 349:Src/hd44780.c **** 	if (LCDerrorFlag) {return;}
+ 1265              		.loc 1 349 0
+ 1266 000a 314B     		ldr	r3, .L117
+ 1267 000c 1C78     		ldrb	r4, [r3]	@ zero_extendqisi2
+ 1268 000e 002C     		cmp	r4, #0
+ 1269 0010 5BD1     		bne	.L105
+ 1270 0012 8046     		mov	r8, r0
+ 1271 0014 1746     		mov	r7, r2
+ 350:Src/hd44780.c **** 	// Handle negative numbers
+ 351:Src/hd44780.c **** 	if (number < 0.0) {
+ 1272              		.loc 1 351 0
+ 1273 0016 0022     		movs	r2, #0
+ 1274              	.LVL144:
+ 1275 0018 0023     		movs	r3, #0
+ 1276 001a 3846     		mov	r0, r7
+ 1277              	.LVL145:
+ 1278 001c 3146     		mov	r1, r6
+ 1279 001e FFF7FEFF 		bl	__aeabi_dcmplt
+ 1280              	.LVL146:
+ 1281 0022 10B9     		cbnz	r0, .L116
+ 1282              	.LVL147:
+ 1283              	.L107:
+ 352:Src/hd44780.c **** 		LCD_WriteString(handle,"-");
+ 353:Src/hd44780.c **** 		number = -number;
+ 354:Src/hd44780.c **** 	}
+ 355:Src/hd44780.c **** 
+ 356:Src/hd44780.c **** 	// Round correctly so that print(1.999, 2) prints as "2.00"
+ 357:Src/hd44780.c **** 	double rounding = 0.5;
+ARM GAS  /tmp/ccht7BbS.s 			page 30
+
+
+ 1284              		.loc 1 357 0
+ 1285 0024 0020     		movs	r0, #0
+ 1286 0026 2B49     		ldr	r1, .L117+4
+ 1287              	.LBB4:
+ 358:Src/hd44780.c **** 	for (uint8_t i = 0; i < digits; ++i)
+ 1288              		.loc 1 358 0
+ 1289 0028 0CE0     		b	.L109
+ 1290              	.LVL148:
+ 1291              	.L116:
+ 1292              	.LBE4:
+ 352:Src/hd44780.c **** 		LCD_WriteString(handle,"-");
+ 1293              		.loc 1 352 0
+ 1294 002a 2B49     		ldr	r1, .L117+8
+ 1295 002c 4046     		mov	r0, r8
+ 1296 002e FFF7FEFF 		bl	LCD_WriteString
+ 1297              	.LVL149:
+ 353:Src/hd44780.c **** 	}
+ 1298              		.loc 1 353 0
+ 1299 0032 06F10046 		add	r6, r6, #-2147483648
+ 1300              	.LVL150:
+ 1301 0036 F5E7     		b	.L107
+ 1302              	.LVL151:
+ 1303              	.L110:
+ 1304              	.LBB5:
+ 359:Src/hd44780.c **** 		rounding /= 10.0;
+ 1305              		.loc 1 359 0 discriminator 3
+ 1306 0038 0022     		movs	r2, #0
+ 1307 003a 284B     		ldr	r3, .L117+12
+ 1308 003c FFF7FEFF 		bl	__aeabi_ddiv
+ 1309              	.LVL152:
+ 358:Src/hd44780.c **** 	for (uint8_t i = 0; i < digits; ++i)
+ 1310              		.loc 1 358 0 discriminator 3
+ 1311 0040 0134     		adds	r4, r4, #1
+ 1312              	.LVL153:
+ 1313 0042 E4B2     		uxtb	r4, r4
+ 1314              	.LVL154:
+ 1315              	.L109:
+ 358:Src/hd44780.c **** 	for (uint8_t i = 0; i < digits; ++i)
+ 1316              		.loc 1 358 0 is_stmt 0 discriminator 1
+ 1317 0044 AC42     		cmp	r4, r5
+ 1318 0046 F7D3     		bcc	.L110
+ 1319              	.LBE5:
+ 360:Src/hd44780.c **** 
+ 361:Src/hd44780.c **** 	number += rounding;
+ 1320              		.loc 1 361 0 is_stmt 1
+ 1321 0048 0246     		mov	r2, r0
+ 1322 004a 0B46     		mov	r3, r1
+ 1323 004c 3846     		mov	r0, r7
+ 1324              	.LVL155:
+ 1325 004e 3146     		mov	r1, r6
+ 1326 0050 FFF7FEFF 		bl	__aeabi_dadd
+ 1327              	.LVL156:
+ 1328 0054 0646     		mov	r6, r0
+ 1329              	.LVL157:
+ 1330 0056 0F46     		mov	r7, r1
+ 1331              	.LVL158:
+ 362:Src/hd44780.c **** 
+ARM GAS  /tmp/ccht7BbS.s 			page 31
+
+
+ 363:Src/hd44780.c **** 	// Extract the integer part of the number and print it
+ 364:Src/hd44780.c **** 	unsigned long int_part = (unsigned long) number;
+ 1332              		.loc 1 364 0
+ 1333 0058 FFF7FEFF 		bl	__aeabi_d2uiz
+ 1334              	.LVL159:
+ 1335 005c 0446     		mov	r4, r0
+ 1336              	.LVL160:
+ 365:Src/hd44780.c **** 	double remainder = number - (double) int_part;
+ 1337              		.loc 1 365 0
+ 1338 005e FFF7FEFF 		bl	__aeabi_ui2d
+ 1339              	.LVL161:
+ 1340 0062 0246     		mov	r2, r0
+ 1341 0064 0B46     		mov	r3, r1
+ 1342 0066 3046     		mov	r0, r6
+ 1343 0068 3946     		mov	r1, r7
+ 1344 006a FFF7FEFF 		bl	__aeabi_dsub
+ 1345              	.LVL162:
+ 1346 006e 0646     		mov	r6, r0
+ 1347              	.LVL163:
+ 1348 0070 0F46     		mov	r7, r1
+ 1349              	.LVL164:
+ 366:Src/hd44780.c **** 	LCD_WriteNumber(handle,int_part,10);
+ 1350              		.loc 1 366 0
+ 1351 0072 0A22     		movs	r2, #10
+ 1352 0074 2146     		mov	r1, r4
+ 1353 0076 4046     		mov	r0, r8
+ 1354 0078 FFF7FEFF 		bl	LCD_WriteNumber
+ 1355              	.LVL165:
+ 367:Src/hd44780.c **** 
+ 368:Src/hd44780.c **** 	// Print the decimal point, but only if there are digits beyond
+ 369:Src/hd44780.c **** 	if (digits > 0) {
+ 1356              		.loc 1 369 0
+ 1357 007c 05B3     		cbz	r5, .L112
+ 370:Src/hd44780.c **** 		LCD_WriteString(handle,".");
+ 1358              		.loc 1 370 0
+ 1359 007e 1849     		ldr	r1, .L117+16
+ 1360 0080 4046     		mov	r0, r8
+ 1361 0082 FFF7FEFF 		bl	LCD_WriteString
+ 1362              	.LVL166:
+ 1363 0086 1BE0     		b	.L112
+ 1364              	.LVL167:
+ 1365              	.L113:
+ 1366              	.LBB6:
+ 371:Src/hd44780.c **** 	}
+ 372:Src/hd44780.c **** 
+ 373:Src/hd44780.c **** 	// Extract digits from the remainder one at a time
+ 374:Src/hd44780.c **** 	while (digits-- > 0) {
+ 375:Src/hd44780.c **** 		remainder *= 10.0;
+ 1367              		.loc 1 375 0
+ 1368 0088 0022     		movs	r2, #0
+ 1369 008a 144B     		ldr	r3, .L117+12
+ 1370 008c 3046     		mov	r0, r6
+ 1371 008e 3946     		mov	r1, r7
+ 1372 0090 FFF7FEFF 		bl	__aeabi_dmul
+ 1373              	.LVL168:
+ 1374 0094 0646     		mov	r6, r0
+ 1375              	.LVL169:
+ARM GAS  /tmp/ccht7BbS.s 			page 32
+
+
+ 1376 0096 0F46     		mov	r7, r1
+ 1377              	.LVL170:
+ 376:Src/hd44780.c **** 		int toPrint = (int)(remainder);
+ 1378              		.loc 1 376 0
+ 1379 0098 FFF7FEFF 		bl	__aeabi_d2iz
+ 1380              	.LVL171:
+ 1381 009c 0546     		mov	r5, r0
+ 1382              	.LVL172:
+ 377:Src/hd44780.c **** 		LCD_WriteNumber(handle,toPrint,10);
+ 1383              		.loc 1 377 0
+ 1384 009e 0A22     		movs	r2, #10
+ 1385 00a0 0146     		mov	r1, r0
+ 1386 00a2 4046     		mov	r0, r8
+ 1387              	.LVL173:
+ 1388 00a4 FFF7FEFF 		bl	LCD_WriteNumber
+ 1389              	.LVL174:
+ 378:Src/hd44780.c **** 		remainder -= toPrint;
+ 1390              		.loc 1 378 0
+ 1391 00a8 2846     		mov	r0, r5
+ 1392 00aa FFF7FEFF 		bl	__aeabi_i2d
+ 1393              	.LVL175:
+ 1394 00ae 0246     		mov	r2, r0
+ 1395 00b0 0B46     		mov	r3, r1
+ 1396 00b2 3046     		mov	r0, r6
+ 1397 00b4 3946     		mov	r1, r7
+ 1398 00b6 FFF7FEFF 		bl	__aeabi_dsub
+ 1399              	.LVL176:
+ 1400 00ba 0646     		mov	r6, r0
+ 1401              	.LVL177:
+ 1402 00bc 0F46     		mov	r7, r1
+ 1403              	.LVL178:
+ 1404              	.LBE6:
+ 374:Src/hd44780.c **** 		remainder *= 10.0;
+ 1405              		.loc 1 374 0
+ 1406 00be 2546     		mov	r5, r4
+ 1407              	.LVL179:
+ 1408              	.L112:
+ 1409 00c0 6B1E     		subs	r3, r5, #1
+ 1410 00c2 DCB2     		uxtb	r4, r3
+ 1411              	.LVL180:
+ 1412 00c4 002D     		cmp	r5, #0
+ 1413 00c6 DFD1     		bne	.L113
+ 379:Src/hd44780.c **** 	}
+ 380:Src/hd44780.c **** 	return LCD_OK;
+ 1414              		.loc 1 380 0
+ 1415 00c8 0020     		movs	r0, #0
+ 1416              	.LVL181:
+ 1417              	.L105:
+ 381:Src/hd44780.c **** }
+ 1418              		.loc 1 381 0
+ 1419 00ca BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 1420              	.L118:
+ 1421 00ce 00BF     		.align	2
+ 1422              	.L117:
+ 1423 00d0 00000000 		.word	.LANCHOR0
+ 1424 00d4 0000E03F 		.word	1071644672
+ 1425 00d8 00000000 		.word	.LC0
+ARM GAS  /tmp/ccht7BbS.s 			page 33
+
+
+ 1426 00dc 00002440 		.word	1076101120
+ 1427 00e0 04000000 		.word	.LC1
+ 1428              		.cfi_endproc
+ 1429              	.LFE85:
+ 1431              		.section	.text.LCD_EntryModeSet,"ax",%progbits
+ 1432              		.align	1
+ 1433              		.global	LCD_EntryModeSet
+ 1434              		.syntax unified
+ 1435              		.thumb
+ 1436              		.thumb_func
+ 1437              		.fpu softvfp
+ 1439              	LCD_EntryModeSet:
+ 1440              	.LFB86:
+ 382:Src/hd44780.c **** 
+ 383:Src/hd44780.c **** LCD_RESULT LCD_EntryModeSet(LCD_PCF8574_HandleTypeDef* handle,
+ 384:Src/hd44780.c **** 		LCD_DIRECTION_INC_DEC direction, LCD_SHIFT shift) {
+ 1441              		.loc 1 384 0
+ 1442              		.cfi_startproc
+ 1443              		@ args = 0, pretend = 0, frame = 0
+ 1444              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1445              	.LVL182:
+ 1446 0000 08B5     		push	{r3, lr}
+ 1447              	.LCFI27:
+ 1448              		.cfi_def_cfa_offset 8
+ 1449              		.cfi_offset 3, -8
+ 1450              		.cfi_offset 14, -4
+ 1451              	.LVL183:
+ 385:Src/hd44780.c **** 
+ 386:Src/hd44780.c **** 	uint8_t cmd = 0;
+ 387:Src/hd44780.c **** 	cmd |= 1 << 2;
+ 388:Src/hd44780.c **** 	cmd |= direction << 1;
+ 1452              		.loc 1 388 0
+ 1453 0002 4900     		lsls	r1, r1, #1
+ 1454              	.LVL184:
+ 1455 0004 41F00401 		orr	r1, r1, #4
+ 1456 0008 C9B2     		uxtb	r1, r1
+ 1457              	.LVL185:
+ 389:Src/hd44780.c **** 	cmd |= shift;
+ 390:Src/hd44780.c **** 
+ 391:Src/hd44780.c **** 	return LCD_WriteCMD(handle, cmd);
+ 1458              		.loc 1 391 0
+ 1459 000a 1143     		orrs	r1, r1, r2
+ 1460              	.LVL186:
+ 1461 000c FFF7FEFF 		bl	LCD_WriteCMD
+ 1462              	.LVL187:
+ 392:Src/hd44780.c **** 
+ 393:Src/hd44780.c **** }
+ 1463              		.loc 1 393 0
+ 1464 0010 08BD     		pop	{r3, pc}
+ 1465              		.cfi_endproc
+ 1466              	.LFE86:
+ 1468              		.section	.text.LCD_Init,"ax",%progbits
+ 1469              		.align	1
+ 1470              		.global	LCD_Init
+ 1471              		.syntax unified
+ 1472              		.thumb
+ 1473              		.thumb_func
+ARM GAS  /tmp/ccht7BbS.s 			page 34
+
+
+ 1474              		.fpu softvfp
+ 1476              	LCD_Init:
+ 1477              	.LFB70:
+  49:Src/hd44780.c **** 	handle->D = 1;
+ 1478              		.loc 1 49 0
+ 1479              		.cfi_startproc
+ 1480              		@ args = 0, pretend = 0, frame = 0
+ 1481              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1482              	.LVL188:
+  50:Src/hd44780.c **** 	handle->B = 0;
+ 1483              		.loc 1 50 0
+ 1484 0000 0123     		movs	r3, #1
+ 1485 0002 4370     		strb	r3, [r0, #1]
+  51:Src/hd44780.c **** 	handle->C = 0;
+ 1486              		.loc 1 51 0
+ 1487 0004 0023     		movs	r3, #0
+ 1488 0006 C370     		strb	r3, [r0, #3]
+  52:Src/hd44780.c **** 	if (handle->type == TYPE0) {
+ 1489              		.loc 1 52 0
+ 1490 0008 8370     		strb	r3, [r0, #2]
+  53:Src/hd44780.c **** 		handle->pins = PCF8574_Type0Pins;
+ 1491              		.loc 1 53 0
+ 1492 000a 90F83C30 		ldrb	r3, [r0, #60]	@ zero_extendqisi2
+ 1493 000e 0BB1     		cbz	r3, .L129
+  57:Src/hd44780.c **** 	}
+ 1494              		.loc 1 57 0
+ 1495 0010 0120     		movs	r0, #1
+ 1496              	.LVL189:
+ 120:Src/hd44780.c **** 
+ 1497              		.loc 1 120 0
+ 1498 0012 7047     		bx	lr
+ 1499              	.LVL190:
+ 1500              	.L129:
+  49:Src/hd44780.c **** 	handle->D = 1;
+ 1501              		.loc 1 49 0
+ 1502 0014 10B5     		push	{r4, lr}
+ 1503              	.LCFI28:
+ 1504              		.cfi_def_cfa_offset 8
+ 1505              		.cfi_offset 4, -8
+ 1506              		.cfi_offset 14, -4
+ 1507 0016 0446     		mov	r4, r0
+  54:Src/hd44780.c **** 	} else {
+ 1508              		.loc 1 54 0
+ 1509 0018 464B     		ldr	r3, .L131
+ 1510 001a 8363     		str	r3, [r0, #56]
+  59:Src/hd44780.c **** 		//handle->errorCallback(LCD_ERROR);
+ 1511              		.loc 1 59 0
+ 1512 001c 4030     		adds	r0, r0, #64
+ 1513              	.LVL191:
+ 1514 001e FFF7FEFF 		bl	PCF8574_Init
+ 1515              	.LVL192:
+ 1516 0022 08B1     		cbz	r0, .L130
+  61:Src/hd44780.c **** 	}
+ 1517              		.loc 1 61 0
+ 1518 0024 0120     		movs	r0, #1
+ 1519              	.L122:
+ 120:Src/hd44780.c **** 
+ARM GAS  /tmp/ccht7BbS.s 			page 35
+
+
+ 1520              		.loc 1 120 0
+ 1521 0026 10BD     		pop	{r4, pc}
+ 1522              	.LVL193:
+ 1523              	.L130:
+  64:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_RS);
+ 1524              		.loc 1 64 0
+ 1525 0028 3220     		movs	r0, #50
+ 1526 002a FFF7FEFF 		bl	HAL_Delay
+ 1527              	.LVL194:
+  65:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_RW);
+ 1528              		.loc 1 65 0
+ 1529 002e 0422     		movs	r2, #4
+ 1530 0030 0021     		movs	r1, #0
+ 1531 0032 2046     		mov	r0, r4
+ 1532 0034 FFF7FEFF 		bl	LCD_StateWriteBit
+ 1533              	.LVL195:
+  66:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 1534              		.loc 1 66 0
+ 1535 0038 0522     		movs	r2, #5
+ 1536 003a 0021     		movs	r1, #0
+ 1537 003c 2046     		mov	r0, r4
+ 1538 003e FFF7FEFF 		bl	LCD_StateWriteBit
+ 1539              	.LVL196:
+  67:Src/hd44780.c **** 
+ 1540              		.loc 1 67 0
+ 1541 0042 0622     		movs	r2, #6
+ 1542 0044 0021     		movs	r1, #0
+ 1543 0046 2046     		mov	r0, r4
+ 1544 0048 FFF7FEFF 		bl	LCD_StateWriteBit
+ 1545              	.LVL197:
+  69:Src/hd44780.c **** 
+ 1546              		.loc 1 69 0
+ 1547 004c 0321     		movs	r1, #3
+ 1548 004e 2046     		mov	r0, r4
+ 1549 0050 FFF7FEFF 		bl	LCD_WriteToDataBus
+ 1550              	.LVL198:
+  71:Src/hd44780.c **** 	HAL_Delay(1);
+ 1551              		.loc 1 71 0
+ 1552 0054 0622     		movs	r2, #6
+ 1553 0056 0121     		movs	r1, #1
+ 1554 0058 2046     		mov	r0, r4
+ 1555 005a FFF7FEFF 		bl	LCD_StateWriteBit
+ 1556              	.LVL199:
+  72:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 1557              		.loc 1 72 0
+ 1558 005e 0120     		movs	r0, #1
+ 1559 0060 FFF7FEFF 		bl	HAL_Delay
+ 1560              	.LVL200:
+  73:Src/hd44780.c **** 	HAL_Delay(5);
+ 1561              		.loc 1 73 0
+ 1562 0064 0622     		movs	r2, #6
+ 1563 0066 0021     		movs	r1, #0
+ 1564 0068 2046     		mov	r0, r4
+ 1565 006a FFF7FEFF 		bl	LCD_StateWriteBit
+ 1566              	.LVL201:
+  74:Src/hd44780.c **** 
+ 1567              		.loc 1 74 0
+ARM GAS  /tmp/ccht7BbS.s 			page 36
+
+
+ 1568 006e 0520     		movs	r0, #5
+ 1569 0070 FFF7FEFF 		bl	HAL_Delay
+ 1570              	.LVL202:
+  76:Src/hd44780.c **** 
+ 1571              		.loc 1 76 0
+ 1572 0074 0321     		movs	r1, #3
+ 1573 0076 2046     		mov	r0, r4
+ 1574 0078 FFF7FEFF 		bl	LCD_WriteToDataBus
+ 1575              	.LVL203:
+  78:Src/hd44780.c **** 	HAL_Delay(1);
+ 1576              		.loc 1 78 0
+ 1577 007c 0622     		movs	r2, #6
+ 1578 007e 0121     		movs	r1, #1
+ 1579 0080 2046     		mov	r0, r4
+ 1580 0082 FFF7FEFF 		bl	LCD_StateWriteBit
+ 1581              	.LVL204:
+  79:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 1582              		.loc 1 79 0
+ 1583 0086 0120     		movs	r0, #1
+ 1584 0088 FFF7FEFF 		bl	HAL_Delay
+ 1585              	.LVL205:
+  80:Src/hd44780.c **** 	HAL_Delay(1);
+ 1586              		.loc 1 80 0
+ 1587 008c 0622     		movs	r2, #6
+ 1588 008e 0021     		movs	r1, #0
+ 1589 0090 2046     		mov	r0, r4
+ 1590 0092 FFF7FEFF 		bl	LCD_StateWriteBit
+ 1591              	.LVL206:
+  81:Src/hd44780.c **** 
+ 1592              		.loc 1 81 0
+ 1593 0096 0120     		movs	r0, #1
+ 1594 0098 FFF7FEFF 		bl	HAL_Delay
+ 1595              	.LVL207:
+  83:Src/hd44780.c **** 
+ 1596              		.loc 1 83 0
+ 1597 009c 0321     		movs	r1, #3
+ 1598 009e 2046     		mov	r0, r4
+ 1599 00a0 FFF7FEFF 		bl	LCD_WriteToDataBus
+ 1600              	.LVL208:
+  85:Src/hd44780.c **** 	HAL_Delay(1);
+ 1601              		.loc 1 85 0
+ 1602 00a4 0622     		movs	r2, #6
+ 1603 00a6 0121     		movs	r1, #1
+ 1604 00a8 2046     		mov	r0, r4
+ 1605 00aa FFF7FEFF 		bl	LCD_StateWriteBit
+ 1606              	.LVL209:
+  86:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 1607              		.loc 1 86 0
+ 1608 00ae 0120     		movs	r0, #1
+ 1609 00b0 FFF7FEFF 		bl	HAL_Delay
+ 1610              	.LVL210:
+  87:Src/hd44780.c **** 	HAL_Delay(1);
+ 1611              		.loc 1 87 0
+ 1612 00b4 0622     		movs	r2, #6
+ 1613 00b6 0021     		movs	r1, #0
+ 1614 00b8 2046     		mov	r0, r4
+ 1615 00ba FFF7FEFF 		bl	LCD_StateWriteBit
+ARM GAS  /tmp/ccht7BbS.s 			page 37
+
+
+ 1616              	.LVL211:
+  88:Src/hd44780.c **** 
+ 1617              		.loc 1 88 0
+ 1618 00be 0120     		movs	r0, #1
+ 1619 00c0 FFF7FEFF 		bl	HAL_Delay
+ 1620              	.LVL212:
+  90:Src/hd44780.c **** 
+ 1621              		.loc 1 90 0
+ 1622 00c4 0221     		movs	r1, #2
+ 1623 00c6 2046     		mov	r0, r4
+ 1624 00c8 FFF7FEFF 		bl	LCD_WriteToDataBus
+ 1625              	.LVL213:
+  92:Src/hd44780.c **** 	HAL_Delay(1);
+ 1626              		.loc 1 92 0
+ 1627 00cc 0622     		movs	r2, #6
+ 1628 00ce 0121     		movs	r1, #1
+ 1629 00d0 2046     		mov	r0, r4
+ 1630 00d2 FFF7FEFF 		bl	LCD_StateWriteBit
+ 1631              	.LVL214:
+  93:Src/hd44780.c **** 	LCD_StateWriteBit(handle, 0, LCD_PIN_E);
+ 1632              		.loc 1 93 0
+ 1633 00d6 0120     		movs	r0, #1
+ 1634 00d8 FFF7FEFF 		bl	HAL_Delay
+ 1635              	.LVL215:
+  94:Src/hd44780.c **** 	HAL_Delay(1);
+ 1636              		.loc 1 94 0
+ 1637 00dc 0622     		movs	r2, #6
+ 1638 00de 0021     		movs	r1, #0
+ 1639 00e0 2046     		mov	r0, r4
+ 1640 00e2 FFF7FEFF 		bl	LCD_StateWriteBit
+ 1641              	.LVL216:
+  95:Src/hd44780.c **** 
+ 1642              		.loc 1 95 0
+ 1643 00e6 0120     		movs	r0, #1
+ 1644 00e8 FFF7FEFF 		bl	HAL_Delay
+ 1645              	.LVL217:
+  98:Src/hd44780.c **** 	cmd = cmd | (1 << 5);
+ 1646              		.loc 1 98 0
+ 1647 00ec 2178     		ldrb	r1, [r4]	@ zero_extendqisi2
+ 1648 00ee C900     		lsls	r1, r1, #3
+ 1649 00f0 C9B2     		uxtb	r1, r1
+ 1650              	.LVL218:
+ 101:Src/hd44780.c **** 
+ 1651              		.loc 1 101 0
+ 1652 00f2 41F02001 		orr	r1, r1, #32
+ 1653              	.LVL219:
+ 1654 00f6 2046     		mov	r0, r4
+ 1655 00f8 FFF7FEFF 		bl	LCD_WriteCMD
+ 1656              	.LVL220:
+ 105:Src/hd44780.c **** 	cmd = cmd | handle->B;
+ 1657              		.loc 1 105 0
+ 1658 00fc A378     		ldrb	r3, [r4, #2]	@ zero_extendqisi2
+ 1659 00fe 5B00     		lsls	r3, r3, #1
+ 1660 0100 43F00803 		orr	r3, r3, #8
+ 1661 0104 03F0FE03 		and	r3, r3, #254
+ 1662              	.LVL221:
+ 106:Src/hd44780.c **** 
+ARM GAS  /tmp/ccht7BbS.s 			page 38
+
+
+ 1663              		.loc 1 106 0
+ 1664 0108 E178     		ldrb	r1, [r4, #3]	@ zero_extendqisi2
+ 1665              	.LVL222:
+ 108:Src/hd44780.c **** 
+ 1666              		.loc 1 108 0
+ 1667 010a 1943     		orrs	r1, r1, r3
+ 1668              	.LVL223:
+ 1669 010c 2046     		mov	r0, r4
+ 1670 010e FFF7FEFF 		bl	LCD_WriteCMD
+ 1671              	.LVL224:
+ 110:Src/hd44780.c **** 
+ 1672              		.loc 1 110 0
+ 1673 0112 2046     		mov	r0, r4
+ 1674 0114 FFF7FEFF 		bl	LCD_ClearDisplay
+ 1675              	.LVL225:
+ 112:Src/hd44780.c **** 
+ 1676              		.loc 1 112 0
+ 1677 0118 0022     		movs	r2, #0
+ 1678 011a 0121     		movs	r1, #1
+ 1679 011c 2046     		mov	r0, r4
+ 1680 011e FFF7FEFF 		bl	LCD_EntryModeSet
+ 1681              	.LVL226:
+ 114:Src/hd44780.c **** 
+ 1682              		.loc 1 114 0
+ 1683 0122 2046     		mov	r0, r4
+ 1684 0124 FFF7FEFF 		bl	LCD_DisplayON
+ 1685              	.LVL227:
+ 116:Src/hd44780.c **** 
+ 1686              		.loc 1 116 0
+ 1687 0128 0121     		movs	r1, #1
+ 1688 012a 2046     		mov	r0, r4
+ 1689 012c FFF7FEFF 		bl	LCD_StateLEDControl
+ 1690              	.LVL228:
+ 118:Src/hd44780.c **** 
+ 1691              		.loc 1 118 0
+ 1692 0130 0020     		movs	r0, #0
+ 1693 0132 78E7     		b	.L122
+ 1694              	.L132:
+ 1695              		.align	2
+ 1696              	.L131:
+ 1697 0134 00000000 		.word	.LANCHOR1
+ 1698              		.cfi_endproc
+ 1699              	.LFE70:
+ 1701              		.section	.text.LCD_CustomChar,"ax",%progbits
+ 1702              		.align	1
+ 1703              		.global	LCD_CustomChar
+ 1704              		.syntax unified
+ 1705              		.thumb
+ 1706              		.thumb_func
+ 1707              		.fpu softvfp
+ 1709              	LCD_CustomChar:
+ 1710              	.LFB87:
+ 394:Src/hd44780.c **** 
+ 395:Src/hd44780.c **** LCD_RESULT LCD_CustomChar(LCD_PCF8574_HandleTypeDef* handle, uint8_t *pattern,
+ 396:Src/hd44780.c **** 		uint8_t address) {
+ 1711              		.loc 1 396 0
+ 1712              		.cfi_startproc
+ARM GAS  /tmp/ccht7BbS.s 			page 39
+
+
+ 1713              		@ args = 0, pretend = 0, frame = 0
+ 1714              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1715              	.LVL229:
+ 397:Src/hd44780.c **** 	if (LCDerrorFlag) {return;}
+ 1716              		.loc 1 397 0
+ 1717 0000 0B4B     		ldr	r3, .L142
+ 1718 0002 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1719 0004 03B1     		cbz	r3, .L141
+ 1720              	.LVL230:
+ 398:Src/hd44780.c **** 	uint8_t a = 0;
+ 399:Src/hd44780.c **** 	int i = 0;
+ 400:Src/hd44780.c **** 	a = 8 * address;
+ 401:Src/hd44780.c **** 	LCD_WriteCMD(handle, a | 0x40);
+ 402:Src/hd44780.c **** 	for (i = 0; i < 8; i++) {
+ 403:Src/hd44780.c **** 		LCD_WriteDATA(handle, pattern[i]);
+ 404:Src/hd44780.c **** 	}
+ 405:Src/hd44780.c **** 	return LCD_OK;
+ 406:Src/hd44780.c **** }
+ 1721              		.loc 1 406 0
+ 1722 0006 7047     		bx	lr
+ 1723              	.LVL231:
+ 1724              	.L141:
+ 396:Src/hd44780.c **** 	if (LCDerrorFlag) {return;}
+ 1725              		.loc 1 396 0
+ 1726 0008 70B5     		push	{r4, r5, r6, lr}
+ 1727              	.LCFI29:
+ 1728              		.cfi_def_cfa_offset 16
+ 1729              		.cfi_offset 4, -16
+ 1730              		.cfi_offset 5, -12
+ 1731              		.cfi_offset 6, -8
+ 1732              		.cfi_offset 14, -4
+ 1733 000a 0E46     		mov	r6, r1
+ 1734 000c 0546     		mov	r5, r0
+ 1735              	.LVL232:
+ 400:Src/hd44780.c **** 	LCD_WriteCMD(handle, a | 0x40);
+ 1736              		.loc 1 400 0
+ 1737 000e D100     		lsls	r1, r2, #3
+ 1738              	.LVL233:
+ 1739 0010 C9B2     		uxtb	r1, r1
+ 1740              	.LVL234:
+ 401:Src/hd44780.c **** 	for (i = 0; i < 8; i++) {
+ 1741              		.loc 1 401 0
+ 1742 0012 41F04001 		orr	r1, r1, #64
+ 1743              	.LVL235:
+ 1744 0016 FFF7FEFF 		bl	LCD_WriteCMD
+ 1745              	.LVL236:
+ 402:Src/hd44780.c **** 		LCD_WriteDATA(handle, pattern[i]);
+ 1746              		.loc 1 402 0
+ 1747 001a 0024     		movs	r4, #0
+ 1748 001c 04E0     		b	.L135
+ 1749              	.LVL237:
+ 1750              	.L136:
+ 403:Src/hd44780.c **** 	}
+ 1751              		.loc 1 403 0 discriminator 3
+ 1752 001e 315D     		ldrb	r1, [r6, r4]	@ zero_extendqisi2
+ 1753 0020 2846     		mov	r0, r5
+ 1754 0022 FFF7FEFF 		bl	LCD_WriteDATA
+ARM GAS  /tmp/ccht7BbS.s 			page 40
+
+
+ 1755              	.LVL238:
+ 402:Src/hd44780.c **** 		LCD_WriteDATA(handle, pattern[i]);
+ 1756              		.loc 1 402 0 discriminator 3
+ 1757 0026 0134     		adds	r4, r4, #1
+ 1758              	.LVL239:
+ 1759              	.L135:
+ 402:Src/hd44780.c **** 		LCD_WriteDATA(handle, pattern[i]);
+ 1760              		.loc 1 402 0 is_stmt 0 discriminator 1
+ 1761 0028 072C     		cmp	r4, #7
+ 1762 002a F8DD     		ble	.L136
+ 405:Src/hd44780.c **** }
+ 1763              		.loc 1 405 0 is_stmt 1
+ 1764 002c 0020     		movs	r0, #0
+ 1765              		.loc 1 406 0
+ 1766 002e 70BD     		pop	{r4, r5, r6, pc}
+ 1767              	.LVL240:
+ 1768              	.L143:
+ 1769              		.align	2
+ 1770              	.L142:
+ 1771 0030 00000000 		.word	.LANCHOR0
+ 1772              		.cfi_endproc
+ 1773              	.LFE87:
+ 1775              		.global	LCDerrorFlag
+ 1776              		.global	PCF8574_Type0Pins
+ 1777              		.section	.bss.LCDerrorFlag,"aw",%nobits
+ 1778              		.set	.LANCHOR0,. + 0
+ 1781              	LCDerrorFlag:
+ 1782 0000 00       		.space	1
+ 1783              		.section	.data.PCF8574_Type0Pins,"aw",%progbits
+ 1784              		.align	2
+ 1785              		.set	.LANCHOR1,. + 0
+ 1788              	PCF8574_Type0Pins:
+ 1789 0000 04000000 		.word	4
+ 1790 0004 05000000 		.word	5
+ 1791 0008 06000000 		.word	6
+ 1792 000c 07000000 		.word	7
+ 1793 0010 00000000 		.word	0
+ 1794 0014 01000000 		.word	1
+ 1795 0018 02000000 		.word	2
+ 1796 001c 03000000 		.word	3
+ 1797              		.section	.rodata.LCD_WriteFloat.str1.4,"aMS",%progbits,1
+ 1798              		.align	2
+ 1799              	.LC0:
+ 1800 0000 2D00     		.ascii	"-\000"
+ 1801 0002 0000     		.space	2
+ 1802              	.LC1:
+ 1803 0004 2E00     		.ascii	".\000"
+ 1804              		.text
+ 1805              	.Letext0:
+ 1806              		.file 2 "/usr/arm-none-eabi/include/machine/_default_types.h"
+ 1807              		.file 3 "/usr/arm-none-eabi/include/sys/lock.h"
+ 1808              		.file 4 "/usr/arm-none-eabi/include/sys/_types.h"
+ 1809              		.file 5 "/usr/lib/gcc/arm-none-eabi/7.3.1/include/stddef.h"
+ 1810              		.file 6 "/usr/arm-none-eabi/include/sys/reent.h"
+ 1811              		.file 7 "/usr/arm-none-eabi/include/sys/_stdint.h"
+ 1812              		.file 8 "Drivers/CMSIS/Include/core_cm3.h"
+ 1813              		.file 9 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h"
+ARM GAS  /tmp/ccht7BbS.s 			page 41
+
+
+ 1814              		.file 10 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h"
+ 1815              		.file 11 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 1816              		.file 12 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 1817              		.file 13 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+ 1818              		.file 14 "Inc/pcf8574.h"
+ 1819              		.file 15 "Inc/hd44780.h"
+ 1820              		.file 16 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ARM GAS  /tmp/ccht7BbS.s 			page 42
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 hd44780.c
+     /tmp/ccht7BbS.s:16     .text.LCD_I2C_WriteOut:0000000000000000 $t
+     /tmp/ccht7BbS.s:23     .text.LCD_I2C_WriteOut:0000000000000000 LCD_I2C_WriteOut
+     /tmp/ccht7BbS.s:68     .text.LCD_I2C_WriteOut:0000000000000024 $d
+     /tmp/ccht7BbS.s:73     .text.LCD_StateWriteBit:0000000000000000 $t
+     /tmp/ccht7BbS.s:80     .text.LCD_StateWriteBit:0000000000000000 LCD_StateWriteBit
+     /tmp/ccht7BbS.s:125    .text.LCD_StateLEDControl:0000000000000000 $t
+     /tmp/ccht7BbS.s:132    .text.LCD_StateLEDControl:0000000000000000 LCD_StateLEDControl
+     /tmp/ccht7BbS.s:156    .text.LCD_WriteToDataBus:0000000000000000 $t
+     /tmp/ccht7BbS.s:163    .text.LCD_WriteToDataBus:0000000000000000 LCD_WriteToDataBus
+     /tmp/ccht7BbS.s:273    .text.LCD_GetBusyFlag:0000000000000000 $t
+     /tmp/ccht7BbS.s:280    .text.LCD_GetBusyFlag:0000000000000000 LCD_GetBusyFlag
+     /tmp/ccht7BbS.s:383    .text.LCD_WaitForBusyFlag:0000000000000000 $t
+     /tmp/ccht7BbS.s:390    .text.LCD_WaitForBusyFlag:0000000000000000 LCD_WaitForBusyFlag
+     /tmp/ccht7BbS.s:448    .text.LCD_WriteCMD:0000000000000000 $t
+     /tmp/ccht7BbS.s:455    .text.LCD_WriteCMD:0000000000000000 LCD_WriteCMD
+     /tmp/ccht7BbS.s:539    .text.LCD_WriteCMD:0000000000000064 $d
+     /tmp/ccht7BbS.s:544    .text.LCD_WriteDATA:0000000000000000 $t
+     /tmp/ccht7BbS.s:551    .text.LCD_WriteDATA:0000000000000000 LCD_WriteDATA
+     /tmp/ccht7BbS.s:624    .text.LCD_SetLocation:0000000000000000 $t
+     /tmp/ccht7BbS.s:631    .text.LCD_SetLocation:0000000000000000 LCD_SetLocation
+     /tmp/ccht7BbS.s:670    .text.LCD_SetLocation:000000000000001c $d
+     /tmp/ccht7BbS.s:675    .text.LCD_WriteString:0000000000000000 $t
+     /tmp/ccht7BbS.s:682    .text.LCD_WriteString:0000000000000000 LCD_WriteString
+     /tmp/ccht7BbS.s:757    .text.LCD_WriteString:0000000000000038 $d
+     /tmp/ccht7BbS.s:762    .text.LCD_ClearDisplay:0000000000000000 $t
+     /tmp/ccht7BbS.s:769    .text.LCD_ClearDisplay:0000000000000000 LCD_ClearDisplay
+     /tmp/ccht7BbS.s:799    .text.LCD_ClearDisplay:0000000000000014 $d
+     /tmp/ccht7BbS.s:804    .text.LCD_DisplayON:0000000000000000 $t
+     /tmp/ccht7BbS.s:811    .text.LCD_DisplayON:0000000000000000 LCD_DisplayON
+     /tmp/ccht7BbS.s:847    .text.LCD_DisplayOFF:0000000000000000 $t
+     /tmp/ccht7BbS.s:854    .text.LCD_DisplayOFF:0000000000000000 LCD_DisplayOFF
+     /tmp/ccht7BbS.s:890    .text.LCD_CursorON:0000000000000000 $t
+     /tmp/ccht7BbS.s:897    .text.LCD_CursorON:0000000000000000 LCD_CursorON
+     /tmp/ccht7BbS.s:940    .text.LCD_CursorOFF:0000000000000000 $t
+     /tmp/ccht7BbS.s:947    .text.LCD_CursorOFF:0000000000000000 LCD_CursorOFF
+     /tmp/ccht7BbS.s:983    .text.LCD_ShiftCursor:0000000000000000 $t
+     /tmp/ccht7BbS.s:990    .text.LCD_ShiftCursor:0000000000000000 LCD_ShiftCursor
+     /tmp/ccht7BbS.s:1048   .text.LCD_ShiftDisplay:0000000000000000 $t
+     /tmp/ccht7BbS.s:1055   .text.LCD_ShiftDisplay:0000000000000000 LCD_ShiftDisplay
+     /tmp/ccht7BbS.s:1113   .text.LCD_WriteNumber:0000000000000000 $t
+     /tmp/ccht7BbS.s:1120   .text.LCD_WriteNumber:0000000000000000 LCD_WriteNumber
+     /tmp/ccht7BbS.s:1226   .text.LCD_WriteNumber:000000000000004c $d
+     /tmp/ccht7BbS.s:1240   .text.LCD_WriteFloat:0000000000000000 $t
+     /tmp/ccht7BbS.s:1247   .text.LCD_WriteFloat:0000000000000000 LCD_WriteFloat
+     /tmp/ccht7BbS.s:1423   .text.LCD_WriteFloat:00000000000000d0 $d
+     /tmp/ccht7BbS.s:1432   .text.LCD_EntryModeSet:0000000000000000 $t
+     /tmp/ccht7BbS.s:1439   .text.LCD_EntryModeSet:0000000000000000 LCD_EntryModeSet
+     /tmp/ccht7BbS.s:1469   .text.LCD_Init:0000000000000000 $t
+     /tmp/ccht7BbS.s:1476   .text.LCD_Init:0000000000000000 LCD_Init
+     /tmp/ccht7BbS.s:1697   .text.LCD_Init:0000000000000134 $d
+     /tmp/ccht7BbS.s:1702   .text.LCD_CustomChar:0000000000000000 $t
+     /tmp/ccht7BbS.s:1709   .text.LCD_CustomChar:0000000000000000 LCD_CustomChar
+     /tmp/ccht7BbS.s:1771   .text.LCD_CustomChar:0000000000000030 $d
+     /tmp/ccht7BbS.s:1781   .bss.LCDerrorFlag:0000000000000000 LCDerrorFlag
+     /tmp/ccht7BbS.s:1788   .data.PCF8574_Type0Pins:0000000000000000 PCF8574_Type0Pins
+ARM GAS  /tmp/ccht7BbS.s 			page 43
+
+
+     /tmp/ccht7BbS.s:1782   .bss.LCDerrorFlag:0000000000000000 $d
+     /tmp/ccht7BbS.s:1784   .data.PCF8574_Type0Pins:0000000000000000 $d
+     /tmp/ccht7BbS.s:1798   .rodata.LCD_WriteFloat.str1.4:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+PCF8574_Write
+PCF8574_Read
+HAL_GetTick
+__aeabi_dcmplt
+__aeabi_ddiv
+__aeabi_dadd
+__aeabi_d2uiz
+__aeabi_ui2d
+__aeabi_dsub
+__aeabi_dmul
+__aeabi_d2iz
+__aeabi_i2d
+PCF8574_Init
+HAL_Delay
