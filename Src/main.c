@@ -340,7 +340,7 @@ int main(void) {
     adc2_filtered = adc2_filtered * 0.9 + (float)adc_buffer.l_tx2 * 0.1; // rechts, vorwaerts
 
     // magic numbers die ich nicht mehr nachvollziehen kann, faehrt sich aber gut ;-)
-    #define LOSLASS_BREMS_ACC 0.995f  // naeher an 1 = gemaechlicher, default 0.996f
+    #define LOSLASS_BREMS_ACC 0.996f  // naeher an 1 = gemaechlicher, default 0.996f
     #define DRUECK_ACC (1.0f - LOSLASS_BREMS_ACC + 0.001f)  // naeher an 0 = gemaechlicher
     //die + 0.001f gleichen float ungenauigkeiten aus.
 
